@@ -3,6 +3,7 @@ pub mod fu;
 pub mod hand;
 pub mod limit_hand;
 pub mod payment;
+pub mod round_context;
 pub mod score;
 pub mod suit;
 pub mod tile_group;

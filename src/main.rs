@@ -5,6 +5,7 @@ use clap::Parser;
 use mahc::calc;
 use mahc::hand::error::HandErr;
 use mahc::payment::Payment;
+use mahc::round_context::{Riichi, RoundContext};
 use mahc::score::{FuValue, HanValue, HonbaCounter, Score};
 use serde_json::json;
 
@@ -122,20 +123,36 @@ pub fn parse_hand(args: &Args) -> Result<String, HandErr> {
     if args.doubleriichi && args.haitei && args.chankan {
         return Err(HandErr::DoubleRiichiHaiteiChankan);
     }
+
+    let round_context = {
+        let riichi = if args.riichi || args.doubleriichi {
+            if args.riichi {
+                Some(Riichi::Riichi)
+            } else {
+                Some(Riichi::DoubleRiichi)
+            }
+        } else {
+            None
+        };
+
+        RoundContext::builder()
+            .tsumo(args.tsumo)
+            .riichi(riichi)
+            .ippatsu(args.ippatsu)
+            .rinshan(args.rinshan)
+            .chankan(args.chankan)
+            .haitei(args.haitei)
+            .tenhou(args.tenhou)
+            .build()
+    };
+
     let score = calc::get_hand_score(
         args.tiles.clone().unwrap(),
         args.win.clone().unwrap(),
         args.dora,
         args.seat.clone(),
         args.prev.clone(),
-        args.tsumo,
-        args.riichi,
-        args.doubleriichi,
-        args.ippatsu,
-        args.haitei,
-        args.rinshan,
-        args.chankan,
-        args.tenhou,
+        &round_context,
         args.ba,
     )?;
 

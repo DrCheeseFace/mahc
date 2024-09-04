@@ -3,6 +3,7 @@ use crate::hand::error::HandErr;
 use crate::hand::Hand;
 use crate::limit_hand::LimitHands;
 use crate::payment::Payment;
+use crate::round_context::{Riichi, RoundContext};
 use crate::score::{FuValue, HanValue, HonbaCounter, Score};
 use crate::yaku::Yaku;
 
@@ -30,32 +31,15 @@ pub fn get_hand_score(
     dora: u32,
     seat: String,
     prev: String,
-    tsumo: bool,
-    riichi: bool,
-    doubleriichi: bool,
-    ippatsu: bool,
-    haitei: bool,
-    rinshan: bool,
-    chankan: bool,
-    tenhou: bool,
+    round_context: &RoundContext,
     honba: HonbaCounter,
 ) -> Result<Score, HandErr> {
     let hand = Hand::new(tiles, win, seat, prev)?;
-    if hand.kans().is_empty() && rinshan {
+    if hand.kans().is_empty() && round_context.rinshan() {
         return Err(HandErr::RinshanKanWithoutKan);
     }
 
-    let yaku = get_yaku_han(
-        &hand,
-        riichi,
-        doubleriichi,
-        ippatsu,
-        haitei,
-        rinshan,
-        chankan,
-        tenhou,
-        tsumo,
-    );
+    let yaku = get_yaku_han(&hand, round_context);
 
     if yaku.0 == 0 {
         return Err(HandErr::NoYaku);
@@ -67,13 +51,13 @@ pub fn get_hand_score(
         if yaku.1.contains(&Yaku::Chiitoitsu) {
             vec![Fu::BasePointsChitoi]
         } else if yaku.1.contains(&Yaku::Pinfu) {
-            if tsumo {
+            if round_context.tsumo() {
                 vec![Fu::BasePoints]
             } else {
                 vec![Fu::BasePoints, Fu::ClosedRon]
             }
         } else {
-            hand.calculate_fu(tsumo)
+            hand.calculate_fu(round_context.tsumo())
         }
     };
     let han = yaku.0 + dora;
@@ -98,32 +82,20 @@ pub fn get_hand_score(
 }
 
 /// Get the yaku score and list of yaku given a hand and some round context.
-pub fn get_yaku_han(
-    hand: &Hand,
-    riichi: bool,
-    doubleriichi: bool,
-    ippatsu: bool,
-    haitei: bool,
-    rinshan: bool,
-    chankan: bool,
-    tenhou: bool,
-    tsumo: bool,
-) -> (HanValue, Vec<Yaku>) {
+pub fn get_yaku_han(hand: &Hand, round_context: &RoundContext) -> (HanValue, Vec<Yaku>) {
     let mut yaku: Vec<Yaku> = vec![];
 
     let conditions = [
-        (riichi, Yaku::Riichi),
-        (doubleriichi, Yaku::DoubleRiichi),
-        (ippatsu, Yaku::Ippatsu),
-        (haitei, Yaku::Haitei),
-        (rinshan, Yaku::RinshanKaihou),
-        (chankan, Yaku::Chankan),
+        (round_context.ippatsu(), Yaku::Ippatsu),
+        (round_context.haitei(), Yaku::Haitei),
+        (round_context.rinshan(), Yaku::RinshanKaihou),
+        (round_context.chankan(), Yaku::Chankan),
         (hand.is_tanyao(), Yaku::Tanyao),
         (hand.is_iipeikou(), Yaku::Iipeikou),
         (hand.is_ryanpeikou(), Yaku::Ryanpeikou),
         (hand.is_toitoi(), Yaku::Toitoi),
         (hand.is_sanshokudoujun(), Yaku::SanshokuDoujun),
-        (hand.is_sanankou(tsumo), Yaku::Sanankou),
+        (hand.is_sanankou(round_context.tsumo()), Yaku::Sanankou),
         (hand.is_honitsu(), Yaku::Honitsu),
         (hand.is_shousangen(), Yaku::Shousangen),
         (hand.is_junchantaiyao(), Yaku::JunchanTaiyao),
@@ -132,7 +104,10 @@ pub fn get_yaku_han(
         (hand.is_ittsuu(), Yaku::Ittsuu),
         (hand.is_chantaiyao(), Yaku::Chantaiyao),
         (hand.is_chiitoitsu(), Yaku::Chiitoitsu),
-        (hand.is_menzentsumo(tsumo), Yaku::MenzenTsumo),
+        (
+            hand.is_menzentsumo(round_context.tsumo()),
+            Yaku::MenzenTsumo,
+        ),
         (hand.is_pinfu(), Yaku::Pinfu),
         (hand.is_sanshokudoukou(), Yaku::SanshokuDoukou),
         (hand.is_chinitsu(), Yaku::Chinitsu),
@@ -143,7 +118,7 @@ pub fn get_yaku_han(
     let mut yakuman: Vec<Yaku> = vec![];
     let yakumanconditions = [
         (hand.is_daisangen(), Yaku::Daisangen),
-        (hand.is_suuankou(tsumo), Yaku::Suuankou),
+        (hand.is_suuankou(round_context.tsumo()), Yaku::Suuankou),
         (hand.is_suuankoutankiwait(), Yaku::SuuankouTankiWait),
         (hand.is_chinroutou(), Yaku::Chinroutou),
         (hand.is_ryuuiisou(), Yaku::Ryuuiisou),
@@ -156,8 +131,8 @@ pub fn get_yaku_han(
         (hand.is_daisuushii(), Yaku::Daisuushii),
         (hand.is_kokushi(), Yaku::KokushiMusou),
         (hand.is_kokushi13sided(), Yaku::KokushiMusou13SidedWait),
-        (hand.is_tenhou(tenhou), Yaku::Tenhou),
-        (hand.is_chiihou(tenhou), Yaku::Chiihou),
+        (hand.is_tenhou(round_context.tenhou()), Yaku::Tenhou),
+        (hand.is_chiihou(round_context.tenhou()), Yaku::Chiihou),
     ];
 
     for (condition, yaku_type) in yakumanconditions {
@@ -169,6 +144,12 @@ pub fn get_yaku_han(
         return (yakuman.len() as HanValue, yakuman);
     }
 
+    if let Some(riichi) = round_context.riichi() {
+        match riichi {
+            Riichi::Riichi => yaku.push(Yaku::Riichi),
+            Riichi::DoubleRiichi => yaku.push(Yaku::DoubleRiichi),
+        }
+    }
     for (condition, yaku_type) in conditions {
         if condition {
             yaku.push(yaku_type);
