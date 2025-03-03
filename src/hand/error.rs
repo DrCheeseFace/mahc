@@ -37,7 +37,7 @@ impl std::fmt::Display for HandErr {
                 write!(f, "Cant Double Riichi, Ippatsu and Haitei")
             }
             Self::DoubleRiichiHaiteiChankan => {
-                write!(f, "Cant Double Riichi, Ippatsu and Haitei")
+                write!(f, "Cant Double Riichi, Haitei and Chankan")
             }
             Self::NoHan => write!(f, "No Han provided!"),
             Self::NoFu => write!(f, "No Fu provided!"),
