@@ -238,9 +238,7 @@ cd mahc/x86_64-unknown-linux-gnu/release
 - ---- @gondoly @GuoDCZ
 
 - If you spot a bug (which there probabably are many), put in an issue with how to reproduce it
-- if youd like to contribute, DO IT (send a PR) 
-- keep in mind, we pretty far from finishing it currently. so FUCK validation (for the time being) 
-
+- if youd like to contribute, DO IT (send a PR)
 
 
 ![this.jpg](https://64.media.tumblr.com/07006d83e5810b3c651254e7b9a3e713/c4dc091a7806e504-ef/s400x600/cdfb08014450e71074a0a8763a67661485d59f8c.gif)
