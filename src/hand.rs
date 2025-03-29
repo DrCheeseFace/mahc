@@ -2,7 +2,7 @@ pub mod error;
 
 use crate::fu::Fu;
 use crate::suit::Suit;
-use crate::tile::Tile;
+use crate::tile::{Dragon, Man, Pin, Sou, Tile, Wind};
 use crate::tile_group::{GroupType, TileGroup};
 use error::HandErr;
 
@@ -257,27 +257,25 @@ impl Hand {
         for tile in dora_indicator_tiles.unwrap() {
             let dora_tile = tile.clone().next().unwrap();
             for triplet in self.triplets() {
-                if triplet.value() == dora_tile.value() && triplet.suit() == dora_tile.suit() {
+                if triplet.tiles[0] == dora_tile {
                     count += 3;
                 }
             }
             for kan in self.kans() {
-                if kan.value() == dora_tile.value() && kan.suit() == dora_tile.suit() {
+                if kan.tiles[0] == dora_tile {
                     count += 4;
                 }
             }
             for pair in self.pairs() {
-                if pair.value() == dora_tile.value() && pair.suit() == dora_tile.suit() {
+                if pair.tiles[0] == dora_tile {
                     count += 2;
                 }
             }
             for sequence in self.sequences() {
-                if (sequence.value() == dora_tile.value()
-                    || (sequence.parse_u8().unwrap() + 1).to_string() == dora_tile.value()
-                    || (sequence.parse_u8().unwrap() + 2).to_string() == dora_tile.value())
-                    && sequence.suit() == dora_tile.suit()
-                {
-                    count += 1;
+                for tile in sequence.tiles {
+                    if tile == dora_tile {
+                        count += 1
+                    }
                 }
             }
         }
@@ -551,12 +549,14 @@ impl Hand {
         let mut has_terminal: bool = false;
         let mut has_honor: bool = false;
         for group in self.groups.clone() {
-            if group.is_terminal() {
-                has_terminal = true;
-            } else if group.is_honor() {
-                has_honor = true;
-            } else {
-                return false;
+            for tile in group.tiles.iter() {
+                if tile.is_honor() {
+                    has_honor = true
+                } else if tile.is_terminal() {
+                    has_terminal = true
+                } else {
+                    return false;
+                }
             }
         }
 
@@ -682,16 +682,16 @@ impl Hand {
 
     /// Check if the hand contains three dragon triplets (or quads).
     pub fn is_daisangen(&self) -> bool {
-        let trips: Vec<String> = self
+        let trips: Vec<Tile> = self
             .triplets()
             .iter()
             .chain(self.kans().iter())
-            .map(|x| x.value().to_string())
+            .map(|x| x.tiles[0].clone())
             .collect();
 
-        trips.contains(&"r".to_string())
-            && trips.contains(&"g".to_string())
-            && trips.contains(&"w".to_string())
+        trips.contains(&Tile::Dragon(Dragon::Red))
+            && trips.contains(&Tile::Dragon(Dragon::Green))
+            && trips.contains(&Tile::Dragon(Dragon::White))
     }
 
     /// Check if the hand contains four concealed triplets.
@@ -759,28 +759,22 @@ impl Hand {
             return false;
         }
 
-        if !self
-            .triplets()
-            .iter()
-            .chain(self.kans().iter())
-            .chain(self.pairs().iter())
-            .all(|group| ["2", "3", "4", "6", "8", "g"].contains(&group.value()))
-        {
-            return false;
-        }
-
-        for group in self.sequences() {
-            if group.value() != "2" {
-                return false;
+        for groups in self.groups.iter() {
+            for tile in groups.tiles.iter() {
+                if ![
+                    Tile::Dragon(Dragon::Green),
+                    Tile::Sou(Sou::TwoSou),
+                    Tile::Sou(Sou::ThreeSou),
+                    Tile::Sou(Sou::FourSou),
+                    Tile::Sou(Sou::SixSou),
+                    Tile::Sou(Sou::EightSou),
+                ]
+                .contains(tile)
+                {
+                    return false;
+                }
             }
         }
-
-        for group in self.groups.clone() {
-            if group.suit() != Suit::Souzu && group.suit() != Suit::Dragon {
-                return false;
-            }
-        }
-
         true
     }
 
@@ -898,26 +892,23 @@ impl Hand {
         }
 
         let mut orphans = vec![
-            ("1", Suit::Manzu),
-            ("9", Suit::Manzu),
-            ("1", Suit::Pinzu),
-            ("9", Suit::Pinzu),
-            ("1", Suit::Souzu),
-            ("9", Suit::Souzu),
-            ("E", Suit::Wind),
-            ("S", Suit::Wind),
-            ("W", Suit::Wind),
-            ("N", Suit::Wind),
-            ("r", Suit::Dragon),
-            ("g", Suit::Dragon),
-            ("w", Suit::Dragon),
+            Tile::Man(Man::OneMan),
+            Tile::Man(Man::NineMan),
+            Tile::Sou(Sou::OneSou),
+            Tile::Sou(Sou::NineSou),
+            Tile::Pin(Pin::OnePin),
+            Tile::Pin(Pin::NinePin),
+            Tile::Wind(Wind::East),
+            Tile::Wind(Wind::South),
+            Tile::Wind(Wind::West),
+            Tile::Wind(Wind::North),
+            Tile::Dragon(Dragon::Red),
+            Tile::Dragon(Dragon::White),
+            Tile::Dragon(Dragon::Green),
         ];
 
         for tile in self.groups.iter() {
-            if let Some(pos) = orphans
-                .iter()
-                .position(|(value, suit)| value == &tile.value() && suit == &tile.suit())
-            {
+            if let Some(pos) = orphans.iter().position(|orphan| orphan == &tile.tiles[0]) {
                 orphans.remove(pos);
             } else {
                 return false;
@@ -936,7 +927,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_tenhou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile().value() == "E" {
+        if tenhou && self.seat_tile() == Tile::Wind(Wind::East) {
             return true;
         }
         false
@@ -946,7 +937,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_chiihou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile().value() != "E" {
+        if tenhou && self.seat_tile() == Tile::Wind(Wind::East) {
             return true;
         }
         false
