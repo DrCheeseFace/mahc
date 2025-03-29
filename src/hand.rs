@@ -217,7 +217,7 @@ impl Hand {
     ///
     /// ```rust
     /// use mahc::hand::Hand;
-    /// use mahc::tile_group::TileGroup;
+    /// use mahc::tile::Tile;
     /// let hand = Hand::new_from_strings(
     ///     vec![
     ///         "123p".to_string(),
@@ -231,7 +231,7 @@ impl Hand {
     ///     "Ew".to_string(),
     /// )
     /// .unwrap();
-    /// let doras: Vec<TileGroup> = vec![
+    /// let doras: Vec<Tile> = vec![
     ///    "1p".to_string().try_into().unwrap(),
     ///    "4s".to_string().try_into().unwrap(),
     ///    "Nw".to_string().try_into().unwrap(),
@@ -242,7 +242,7 @@ impl Hand {
     /// let dora = hand.get_dora_count(Some(doras));
     /// assert_eq!(dora, 14);
     /// ```
-    pub fn get_dora_count(&self, dora_indicator_tiles: Option<Vec<TileGroup>>) -> u32 {
+    pub fn get_dora_count(&self, dora_indicator_tiles: Option<Vec<Tile>>) -> u32 {
         let mut count = 0;
         for group in &self.groups {
             for tile in group.tiles.iter() {
@@ -255,7 +255,7 @@ impl Hand {
             return count;
         }
         for tile in dora_indicator_tiles.unwrap() {
-            let dora_tile = tile.next_tile().unwrap();
+            let dora_tile = tile.clone().next().unwrap();
             for triplet in self.triplets() {
                 if triplet.value() == dora_tile.value() && triplet.suit() == dora_tile.suit() {
                     count += 3;
@@ -2588,7 +2588,8 @@ mod tests {
 mod tile_group_tests {
     use super::Hand;
     use crate::suit::Suit;
-    use crate::tile_group::{GroupType, TileGroup};
+    use crate::tile::Tile;
+    use crate::tile_group::GroupType;
 
     #[test]
     fn identify_pair() {
@@ -2754,11 +2755,11 @@ mod tile_group_tests {
             "Ew".to_string(),
         )
         .unwrap();
-        let dora_1: TileGroup = "1p".to_string().try_into().unwrap();
-        let dora_2: TileGroup = "4s".to_string().try_into().unwrap();
-        let dora_3: TileGroup = "Nw".to_string().try_into().unwrap();
-        let dora_4: TileGroup = "8m".to_string().try_into().unwrap();
-        let dora_5: TileGroup = "gd".to_string().try_into().unwrap();
+        let dora_1: Tile = "1p".to_string().try_into().unwrap();
+        let dora_2: Tile = "4s".to_string().try_into().unwrap();
+        let dora_3: Tile = "Nw".to_string().try_into().unwrap();
+        let dora_4: Tile = "8m".to_string().try_into().unwrap();
+        let dora_5: Tile = "gd".to_string().try_into().unwrap();
         let doras = vec![dora_1, dora_2, dora_3, dora_4, dora_5];
 
         let dora = out.get_dora_count(Some(doras));

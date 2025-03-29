@@ -4,7 +4,7 @@ use crate::hand::Hand;
 use crate::limit_hand::LimitHands;
 use crate::payment::Payment;
 use crate::score::{FuValue, HanValue, HonbaCounter, Score};
-use crate::tile_group::TileGroup;
+use crate::tile::Tile;
 use crate::yaku::Yaku;
 
 #[derive(Debug, PartialEq)]
@@ -27,7 +27,7 @@ impl std::fmt::Display for CalculatorErrors {
 /// Get the score breakdown of the hand.
 pub fn get_hand_score(
     hand: Hand,
-    dora: Option<Vec<TileGroup>>,
+    dora: Option<Vec<Tile>>,
     tsumo: bool,
     riichi: bool,
     doubleriichi: bool,
