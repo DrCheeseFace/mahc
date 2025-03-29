@@ -26,7 +26,7 @@ pub struct Score {
     honba: HonbaCounter,
     /// Is the hand open when it scored?
     is_open: bool,
-    /// total number of han from dora 
+    /// total number of han from dora
     dora_count: u32,
 }
 
@@ -89,8 +89,8 @@ impl Score {
         self.is_open
     }
 
-    /// Get the total number of han from dora. 
-    pub fn dora_count(&self) -> u32{
+    /// Get the total number of han from dora.
+    pub fn dora_count(&self) -> u32 {
         self.dora_count
     }
 }
