@@ -122,55 +122,6 @@ impl TileGroup {
     pub fn suit(&self) -> Suit {
         self.tiles[0].suit().clone()
     }
-
-    /// Get the next tile  
-    /// Usually used for getting the dora tile from the dora indicator tile
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use mahc::tile_group::TileGroup;
-    /// use mahc::suit::Suit;
-    /// let tile: TileGroup = "7s".to_string().try_into().unwrap();
-    /// let input = tile.next_tile().unwrap();
-    /// let actual = input.value();
-    /// let expected = "8";
-    ///
-    /// assert_eq!(actual, expected);
-    ///
-    /// let actual = input.suit();
-    /// let expected = Suit::Souzu;
-    ///
-    /// assert_eq!(actual, expected);
-    /// ```
-    pub fn next_tile(&self) -> Result<Self, HandErr> {
-        let value: String = match self.suit() {
-            Suit::Souzu | Suit::Manzu | Suit::Pinzu => {
-                let value = (self.parse_u8().unwrap() + 1).to_string();
-                if value == "10" {
-                    "1".to_string()
-                } else {
-                    value
-                }
-            }
-            Suit::Wind => match self.value() {
-                "E" => "S".to_string(),
-                "S" => "W".to_string(),
-                "W" => "N".to_string(),
-                "N" => "E".to_string(),
-                _ => return Err(HandErr::InvalidGroup),
-            },
-            Suit::Dragon => match self.value() {
-                "w" => "g".to_string(),
-                "g" => "r".to_string(),
-                "r" => "w".to_string(),
-                _ => return Err(HandErr::InvalidGroup),
-            },
-        };
-        let tile = Tile::new(&value, &self.suit().clone())?;
-        let tiles: Vec<Tile> = vec![tile];
-        Self::new(tiles, false, self.group_type.clone())
-    }
 }
 
 //AHAHAHAHAHAHAHAH I DONT NEED THIS
@@ -374,56 +325,5 @@ mod tests {
         assert_eq!(tile.value(), "1");
         assert_eq!(tile.tiles[0].is_aka(), false);
         assert_eq!(tile.group_type, GroupType::None);
-    }
-
-    #[test]
-    fn next_dragon() {
-        let tile = TileGroup::try_from("wd".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "g");
-        assert_eq!(next_tile.suit(), Suit::Dragon);
-
-        let tile = TileGroup::try_from("gd".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "r");
-
-        let tile = TileGroup::try_from("rd".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "w");
-    }
-    #[test]
-    fn next_wind() {
-        let tile = TileGroup::try_from("Ew".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "S");
-        assert_eq!(next_tile.suit(), Suit::Wind);
-
-        let tile = TileGroup::try_from("Sw".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "W");
-
-        let tile = TileGroup::try_from("Ww".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "N");
-
-        let tile = TileGroup::try_from("Nw".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "E");
-    }
-
-    #[test]
-    fn next_manpinsou() {
-        let tile = TileGroup::try_from("1m".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "2");
-        assert_eq!(next_tile.suit(), Suit::Manzu);
-
-        let tile = TileGroup::try_from("9m".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "1");
-
-        let tile = TileGroup::try_from("0m".to_string()).unwrap();
-        let next_tile = tile.next_tile().unwrap();
-        assert_eq!(next_tile.value(), "6");
     }
 }

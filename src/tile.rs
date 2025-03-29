@@ -86,53 +86,73 @@ impl Iterator for Tile {
 
     fn next(&mut self) -> Option<Self::Item> {
         match self {
-            Tile::Man(t) => match t {
-                Man::OneMan => Some(Tile::Man(Man::TwoMan)),
-                Man::TwoMan => Some(Tile::Man(Man::ThreeMan)),
-                Man::ThreeMan => Some(Tile::Man(Man::FourMan)),
-                Man::FourMan => Some(Tile::Man(Man::FiveMan)),
-                Man::FiveMan => Some(Tile::Man(Man::SixMan)),
-                Man::AkaFiveMan => Some(Tile::Man(Man::SixMan)),
-                Man::SixMan => Some(Tile::Man(Man::SevenMan)),
-                Man::SevenMan => Some(Tile::Man(Man::EightMan)),
-                Man::EightMan => Some(Tile::Man(Man::NineMan)),
-                Man::NineMan => Some(Tile::Man(Man::OneMan)),
-            },
-            Tile::Pin(t) => match t {
-                Pin::OnePin => Some(Tile::Pin(Pin::TwoPin)),
-                Pin::TwoPin => Some(Tile::Pin(Pin::ThreePin)),
-                Pin::ThreePin => Some(Tile::Pin(Pin::FourPin)),
-                Pin::FourPin => Some(Tile::Pin(Pin::FivePin)),
-                Pin::FivePin => Some(Tile::Pin(Pin::SixPin)),
-                Pin::AkaFivePin => Some(Tile::Pin(Pin::SixPin)),
-                Pin::SixPin => Some(Tile::Pin(Pin::SevenPin)),
-                Pin::SevenPin => Some(Tile::Pin(Pin::EightPin)),
-                Pin::EightPin => Some(Tile::Pin(Pin::NinePin)),
-                Pin::NinePin => Some(Tile::Pin(Pin::OnePin)),
-            },
-            Tile::Sou(t) => match t {
-                Sou::OneSou => Some(Tile::Sou(Sou::TwoSou)),
-                Sou::TwoSou => Some(Tile::Sou(Sou::ThreeSou)),
-                Sou::ThreeSou => Some(Tile::Sou(Sou::FourSou)),
-                Sou::FourSou => Some(Tile::Sou(Sou::FiveSou)),
-                Sou::FiveSou => Some(Tile::Sou(Sou::SixSou)),
-                Sou::AkaFiveSou => Some(Tile::Sou(Sou::SixSou)),
-                Sou::SixSou => Some(Tile::Sou(Sou::SevenSou)),
-                Sou::SevenSou => Some(Tile::Sou(Sou::EightSou)),
-                Sou::EightSou => Some(Tile::Sou(Sou::NineSou)),
-                Sou::NineSou => Some(Tile::Sou(Sou::OneSou)),
-            },
-            Tile::Wind(t) => match t {
-                Wind::East => Some(Tile::Wind(Wind::South)),
-                Wind::South => Some(Tile::Wind(Wind::West)),
-                Wind::West => Some(Tile::Wind(Wind::North)),
-                Wind::North => Some(Tile::Wind(Wind::East)),
-            },
-            Tile::Dragon(t) => match t {
-                Dragon::Red => Some(Tile::Dragon(Dragon::White)),
-                Dragon::White => Some(Tile::Dragon(Dragon::Green)),
-                Dragon::Green => Some(Tile::Dragon(Dragon::Red)),
-            },
+            Tile::Man(t) => {
+                let next_t = match t {
+                    Man::OneMan => Man::TwoMan,
+                    Man::TwoMan => Man::ThreeMan,
+                    Man::ThreeMan => Man::FourMan,
+                    Man::FourMan => Man::FiveMan,
+                    Man::FiveMan => Man::SixMan,
+                    Man::AkaFiveMan => Man::SixMan,
+                    Man::SixMan => Man::SevenMan,
+                    Man::SevenMan => Man::EightMan,
+                    Man::EightMan => Man::NineMan,
+                    Man::NineMan => Man::OneMan,
+                };
+                *t = next_t.clone();
+                Some(Tile::Man(next_t))
+            }
+            Tile::Pin(t) => {
+                let next_t = match t {
+                    Pin::OnePin => Pin::TwoPin,
+                    Pin::TwoPin => Pin::ThreePin,
+                    Pin::ThreePin => Pin::FourPin,
+                    Pin::FourPin => Pin::FivePin,
+                    Pin::FivePin => Pin::SixPin,
+                    Pin::AkaFivePin => Pin::SixPin,
+                    Pin::SixPin => Pin::SevenPin,
+                    Pin::SevenPin => Pin::EightPin,
+                    Pin::EightPin => Pin::NinePin,
+                    Pin::NinePin => Pin::OnePin,
+                };
+                *t = next_t.clone();
+                Some(Tile::Pin(next_t))
+            }
+            Tile::Sou(t) => {
+                let next_t = match t {
+                    Sou::OneSou => Sou::TwoSou,
+                    Sou::TwoSou => Sou::ThreeSou,
+                    Sou::ThreeSou => Sou::FourSou,
+                    Sou::FourSou => Sou::FiveSou,
+                    Sou::FiveSou => Sou::SixSou,
+                    Sou::AkaFiveSou => Sou::SixSou,
+                    Sou::SixSou => Sou::SevenSou,
+                    Sou::SevenSou => Sou::EightSou,
+                    Sou::EightSou => Sou::NineSou,
+                    Sou::NineSou => Sou::OneSou,
+                };
+                *t = next_t.clone();
+                Some(Tile::Sou(next_t))
+            }
+            Tile::Wind(t) => {
+                let next_t = match t {
+                    Wind::East => Wind::South,
+                    Wind::South => Wind::West,
+                    Wind::West => Wind::North,
+                    Wind::North => Wind::East,
+                };
+                *t = next_t.clone();
+                Some(Tile::Wind(next_t))
+            }
+            Tile::Dragon(t) => {
+                let next_t = match t {
+                    Dragon::Red => Dragon::White,
+                    Dragon::White => Dragon::Green,
+                    Dragon::Green => Dragon::Red,
+                };
+                *t = next_t.clone();
+                Some(Tile::Dragon(next_t))
+            }
         }
     }
 }
@@ -483,5 +503,56 @@ mod tests {
         assert_eq!(tile, Tile::Sou(Sou::NineSou));
         let tile = Tile::new("0", &Suit::Souzu).unwrap();
         assert_eq!(tile, Tile::Sou(Sou::AkaFiveSou));
+    }
+
+    #[test]
+    fn next_dragon() {
+        let mut tile = Tile::try_from("wd".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "g");
+        assert_eq!(tile.suit(), Suit::Dragon);
+
+        let mut tile = Tile::try_from("gd".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "r");
+
+        let mut tile = Tile::try_from("rd".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "w");
+    }
+    #[test]
+    fn next_wind() {
+        let mut tile = Tile::try_from("Ew".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "S");
+        assert_eq!(tile.suit(), Suit::Wind);
+
+        let mut tile = Tile::try_from("Sw".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "W");
+
+        let mut tile = Tile::try_from("Ww".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "N");
+
+        let mut tile = Tile::try_from("Nw".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "E");
+    }
+
+    #[test]
+    fn next_manpinsou() {
+        let mut tile = Tile::try_from("1m".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "2");
+        assert_eq!(tile.suit(), Suit::Manzu);
+
+        let mut tile = Tile::try_from("9m".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "1");
+
+        let mut tile = Tile::try_from("0m".to_string()).unwrap();
+        tile.next().unwrap();
+        assert_eq!(tile.value(), "6");
     }
 }
