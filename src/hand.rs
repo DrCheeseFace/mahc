@@ -48,8 +48,12 @@ impl Hand {
         // check if last group contains the winning tile
         // FUCK handling kokuushi
         let tilecount: u8 = groups.iter().map(|s| s.group_type.tile_count()).sum();
-        if tilecount == 13 {
+        if tilecount == 14 {
             let last_group = groups.last().unwrap();
+            // last group should not be open
+            if last_group.isopen {
+                return Err(HandErr::InvalidShape);
+            }
             match last_group.group_type {
                 GroupType::Sequence => {
                     if win_tile.suit != last_group.suit {
@@ -68,7 +72,14 @@ impl Hand {
                         return Err(HandErr::InvalidShape);
                     }
                 }
-                GroupType::Kan | GroupType::None => return Err(HandErr::InvalidShape),
+                GroupType::Kan => return Err(HandErr::InvalidShape),
+                GroupType::None => {
+                    // TODO(zhiyao): A hacky way to check for kokushi.
+                    // Maybe we should find a more explicit way.
+                    if !(no_shape_count == 12 && pair_count == 1) {
+                        return Err(HandErr::InvalidShape);
+                    }
+                }
             }
         }
 
@@ -344,37 +355,50 @@ impl Hand {
 
     /// Check if the hand only contains simple tiles -- no terminal or honor tiles.
     pub fn is_tanyao(&self) -> bool {
-        if self.groups.len() == 13 {
-            return false;
-        }
-
-        for group in self.groups.clone() {
-            if group.isterminal || group.is_honor() {
-                return false;
-            }
-        }
-
-        true
+        self.groups
+            .iter()
+            .all(|group| !group.isterminal && !group.is_honor())
     }
 
     /// Check if the hand contains two unique identical sequences.
     pub fn is_ryanpeikou(&self) -> bool {
+        if self.is_open() {
+            return false;
+        }
+
         let mut seqs: Vec<TileGroup> = self.sequences();
 
         if seqs.len() != 4 {
             return false;
         }
 
-        seqs.dedup();
-        seqs.len() == 2
+        seqs.sort();
+        if seqs[1] == seqs[2] {
+            seqs.dedup();
+            seqs.len() == 1
+        } else {
+            seqs.dedup();
+            seqs.len() == 2
+        }
     }
 
     /// Check if the hand contains two identical sequences.
     pub fn is_iipeikou(&self) -> bool {
-        let mut seqs: Vec<TileGroup> = self.sequences();
+        if self.is_open() {
+            return false;
+        }
 
-        seqs.dedup();
-        !(self.sequences().len() == seqs.len() || self.is_open() || self.is_ryanpeikou())
+        let mut seqs: Vec<TileGroup> = self.sequences();
+        seqs.sort();
+
+        let mut seqs_dedup: Vec<TileGroup> = seqs.clone();
+        seqs_dedup.dedup();
+
+        match seqs.len() - seqs_dedup.len() {
+            1 => true,
+            2 => seqs[1] == seqs[2],
+            _ => false,
+        }
     }
 
     /// Check if the hand contains value honors.
@@ -382,26 +406,14 @@ impl Hand {
         // i do it like this because a single group can have multiple yakuhai
         let mut count = 0;
 
-        for triplet_group in self.triplets() {
-            if triplet_group.value == self.prev_tile.value {
+        for group in self.triplets().iter().chain(self.kans().iter()) {
+            if group.value == self.prev_tile.value {
                 count += 1;
             }
-            if triplet_group.value == self.seat_tile.value {
+            if group.value == self.seat_tile.value {
                 count += 1;
             }
-            if triplet_group.suit == Suit::Dragon {
-                count += 1;
-            }
-        }
-
-        for kan_group in self.kans() {
-            if kan_group.value == self.prev_tile.value {
-                count += 1;
-            }
-            if kan_group.value == self.seat_tile.value {
-                count += 1;
-            }
-            if kan_group.suit == Suit::Dragon {
+            if group.suit == Suit::Dragon {
                 count += 1;
             }
         }
@@ -418,20 +430,10 @@ impl Hand {
     ///
     /// If the last necessary triplet is formed from a ron, it is not considered concealed and sanankou is not granted.
     pub fn is_sanankou(&self, tsumo: bool) -> bool {
-        if self.groups.len() == 13 {
-            return false;
-        }
-
         let mut closed_triplet_count = 0;
 
-        for triplet_group in self.triplets() {
+        for triplet_group in self.triplets().iter().chain(self.kans().iter()) {
             if !triplet_group.isopen {
-                closed_triplet_count += 1;
-            }
-        }
-
-        for kan_group in self.kans() {
-            if !kan_group.isopen {
                 closed_triplet_count += 1;
             }
         }
@@ -449,26 +451,20 @@ impl Hand {
             return false;
         }
 
-        let mut list_of_seqs: Vec<(String, Suit)> = vec![];
-        for sequence_group in self.sequences() {
-            list_of_seqs.push((sequence_group.value.clone(), sequence_group.suit.clone()));
-        }
-        list_of_seqs.sort();
-        list_of_seqs.dedup();
-        if list_of_seqs.len() == 3 {
-            if list_of_seqs[0].0 == list_of_seqs[1].0 && list_of_seqs[1].0 == list_of_seqs[2].0 {
-                return true;
-            }
-        } else if list_of_seqs.len() == 4 {
-            if list_of_seqs[1].0 == list_of_seqs[2].0 {
-                if list_of_seqs[0].0 == list_of_seqs[1].0 || list_of_seqs[2].0 == list_of_seqs[3].0
-                {
-                    return true;
-                }
-            }
-        }
+        let mut seqs: Vec<_> = self
+            .sequences()
+            .iter()
+            .map(|group| (group.value.clone(), group.suit.clone()))
+            .collect();
 
-        false
+        seqs.sort();
+        seqs.dedup();
+
+        match seqs.len() {
+            3 => seqs[1].0 == seqs[2].0 && seqs[0].0 == seqs[1].0,
+            4 => seqs[1].0 == seqs[2].0 && (seqs[0].0 == seqs[1].0 || seqs[2].0 == seqs[3].0),
+            _ => false,
+        }
     }
 
     /// Check if the hand only contains tiles of one suit and any honor tiles.
@@ -657,10 +653,8 @@ impl Hand {
             if list_of_vals[0] == list_of_vals[1] {
                 return true;
             }
-            if list_of_vals.len() == 4 {
-                if list_of_vals[2] == list_of_vals[3] {
-                    return true;
-                }
+            if list_of_vals.len() == 4 && list_of_vals[2] == list_of_vals[3] {
+                return true;
             }
         }
 
@@ -2364,6 +2358,21 @@ mod tests {
         )
         .unwrap();
         //is open
+        assert!(!out.is_ryanpeikou());
+
+        let out = Hand::new_from_strings(
+            vec![
+                "123s".to_string(),
+                "123s".to_string(),
+                "123s".to_string(),
+                "678m".to_string(),
+                "77m".to_string(),
+            ],
+            "7m".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
         assert!(!out.is_ryanpeikou());
     }
 

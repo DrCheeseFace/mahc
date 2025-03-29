@@ -308,7 +308,7 @@ pub fn parse_file(args: &Args) {
                 current_line_args.push(arg.into());
             }
             let args = Args::parse_from(&current_line_args);
-            if let Some(_) = args.file {
+            if args.file.is_some() {
                 parse_file(&args);
                 Ok("".to_string())
             } else if args.manual.is_some() {
@@ -347,7 +347,7 @@ pub fn writeout(result: &Result<String, HandErr>, output: &str) {
         Ok(o) => o.clone(),
         Err(e) => e.to_string(),
     };
-    content.push_str("\n");
+    content.push('\n');
 
     file.write_all(content.as_bytes())
         .expect("unable to write to file");
@@ -356,7 +356,7 @@ pub fn writeout(result: &Result<String, HandErr>, output: &str) {
 fn main() {
     let args = Args::parse();
 
-    let result = if let Some(_) = args.file {
+    let result = if args.file.is_some() {
         parse_file(&args);
         return;
     } else if args.manual.is_some() {

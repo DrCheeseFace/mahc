@@ -1,7 +1,7 @@
 use crate::hand::error::HandErr;
 use crate::suit::Suit;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TileGroup {
     pub value: String,
     pub suit: Suit,
@@ -23,7 +23,7 @@ impl TryFrom<String> for TileGroup {
         } else {
             group.chars().nth(0).unwrap().to_string()
         };
-        if group.contains("0") {
+        if group.contains('0') {
             isaka = true;
         }
 
@@ -138,20 +138,20 @@ impl TileGroup {
                 _ => return Err(HandErr::InvalidGroup),
             },
         };
-        Ok(Self::new(
+        Self::new(
             value,
             self.suit.clone(),
             false,
             self.group_type.clone(),
             false,
             false,
-        )?)
+        )
     }
 }
 
 //AHAHAHAHAHAHAHAH I DONT NEED THIS
 //turns our i did need this :)
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum GroupType {
     Sequence,
     Triplet,
@@ -180,7 +180,7 @@ impl GroupType {
         } else {
             group.len() - 1
         };
-        group = group.replace("0", "5");
+        group = group.replace('0', "5");
 
         if let Some(sub_group) = group.get(0..count) {
             for i in sub_group.chars() {
@@ -373,6 +373,10 @@ mod tests {
         let tile = TileGroup::try_from("Sw".to_string()).unwrap();
         let next_tile = tile.next_tile().unwrap();
         assert_eq!(next_tile.value, "W");
+
+        let tile = TileGroup::try_from("Ww".to_string()).unwrap();
+        let next_tile = tile.next_tile().unwrap();
+        assert_eq!(next_tile.value, "N");
 
         let tile = TileGroup::try_from("Nw".to_string()).unwrap();
         let next_tile = tile.next_tile().unwrap();

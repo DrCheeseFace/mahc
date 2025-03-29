@@ -119,8 +119,37 @@ pub fn get_yaku_han(
     tenhou: bool,
     tsumo: bool,
 ) -> (HanValue, Vec<Yaku>) {
-    let mut yaku: Vec<Yaku> = vec![];
+    //check if there are many yakuman, if so return only yakuman
+    //this is so unbelievably jank but it works
+    let mut yakuman: Vec<Yaku> = vec![];
+    let yakumanconditions = [
+        (hand.is_daisangen(), Yaku::Daisangen),
+        (hand.is_suuankou(tsumo), Yaku::Suuankou),
+        (hand.is_suuankoutankiwait(), Yaku::SuuankouTankiWait),
+        (hand.is_chinroutou(), Yaku::Chinroutou),
+        (hand.is_ryuuiisou(), Yaku::Ryuuiisou),
+        (hand.is_chuurenpoutou(), Yaku::ChuurenPoutou),
+        (hand.is_chuurenpoutou9sided(), Yaku::ChuurenPoutou9SidedWait),
+        (hand.is_tsuuiisou(), Yaku::Tsuuiisou),
+        (hand.is_daichiishin(), Yaku::Daichiishin),
+        (hand.is_suukantsu(), Yaku::Suukantsu),
+        (hand.is_shousuushii(), Yaku::Shousuushii),
+        (hand.is_daisuushii(), Yaku::Daisuushii),
+        (hand.is_kokushi(), Yaku::KokushiMusou),
+        (hand.is_kokushi13sided(), Yaku::KokushiMusou13SidedWait),
+        (hand.is_tenhou(tenhou), Yaku::Tenhou),
+        (hand.is_chiihou(tenhou), Yaku::Chiihou),
+    ];
+    for (condition, yaku_type) in yakumanconditions {
+        if condition {
+            yakuman.push(yaku_type);
+        }
+    }
+    if !yakuman.is_empty() {
+        return (yakuman.len() as HanValue, yakuman);
+    }
 
+    let mut yaku: Vec<Yaku> = vec![];
     let conditions = [
         (riichi, Yaku::Riichi),
         (doubleriichi, Yaku::DoubleRiichi),
@@ -147,38 +176,6 @@ pub fn get_yaku_han(
         (hand.is_sanshokudoukou(), Yaku::SanshokuDoukou),
         (hand.is_chinitsu(), Yaku::Chinitsu),
     ];
-
-    //check if there are many yakuman, if so return only yakuman
-    //this is so unbelievably jank but it works
-    let mut yakuman: Vec<Yaku> = vec![];
-    let yakumanconditions = [
-        (hand.is_daisangen(), Yaku::Daisangen),
-        (hand.is_suuankou(tsumo), Yaku::Suuankou),
-        (hand.is_suuankoutankiwait(), Yaku::SuuankouTankiWait),
-        (hand.is_chinroutou(), Yaku::Chinroutou),
-        (hand.is_ryuuiisou(), Yaku::Ryuuiisou),
-        (hand.is_chuurenpoutou(), Yaku::ChuurenPoutou),
-        (hand.is_chuurenpoutou9sided(), Yaku::ChuurenPoutou9SidedWait),
-        (hand.is_tsuuiisou(), Yaku::Tsuuiisou),
-        (hand.is_daichiishin(), Yaku::Daichiishin),
-        (hand.is_suukantsu(), Yaku::Suukantsu),
-        (hand.is_shousuushii(), Yaku::Shousuushii),
-        (hand.is_daisuushii(), Yaku::Daisuushii),
-        (hand.is_kokushi(), Yaku::KokushiMusou),
-        (hand.is_kokushi13sided(), Yaku::KokushiMusou13SidedWait),
-        (hand.is_tenhou(tenhou), Yaku::Tenhou),
-        (hand.is_chiihou(tenhou), Yaku::Chiihou),
-    ];
-
-    for (condition, yaku_type) in yakumanconditions {
-        if condition {
-            yakuman.push(yaku_type);
-        }
-    }
-    if !yakuman.is_empty() {
-        return (yakuman.len() as HanValue, yakuman);
-    }
-
     for (condition, yaku_type) in conditions {
         if condition {
             yaku.push(yaku_type);

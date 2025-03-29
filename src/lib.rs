@@ -8,6 +8,6 @@ pub mod suit;
 pub mod tile_group;
 pub mod yaku;
 
-/// Characters that represent terminal or honor tiles.
+// Characters that represent terminal or honor tiles.
 // Using a fixed array gets stored on the stack rather than a `String` which gets stored on the heap.
-const TERMINAL_CHARS: [char; 9] = ['1', '9', 'E', 'S', 'W', 'N', 'r', 'g', 'w'];
+// const TERMINAL_CHARS: [char; 9] = ['1', '9', 'E', 'S', 'W', 'N', 'r', 'g', 'w'];

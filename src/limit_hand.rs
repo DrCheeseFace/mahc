@@ -34,7 +34,6 @@ impl LimitHands {
             return None;
         }
 
-        // TODO: Allow (3 han, 70+ fu) and (4 han, 40+ fu) to be considered manga.
         if han <= 5 {
             Some(Self::Mangan)
         } else if han <= 7 {
