@@ -66,6 +66,21 @@ pub enum Dragon {
     White,
 }
 
+impl TryFrom<String> for Tile {
+    type Error = HandErr;
+
+    fn try_from(tile_string: String) -> Result<Self, Self::Error> {
+        if tile_string.len() != 2 {
+            return Err(HandErr::InvalidTile);
+        }
+        let value_string = tile_string.chars().nth(0).unwrap().to_string();
+        let suit_string = tile_string.chars().nth(1).unwrap().to_string();
+
+        let suit = Suit::suit_from_string(&suit_string, &value_string)?;
+        Tile::new(&value_string, &suit)
+    }
+}
+
 impl Iterator for Tile {
     type Item = Tile;
 
@@ -320,6 +335,11 @@ impl Tile {
             Tile::Dragon(Dragon::White) => "w",
         }
     }
+
+    /// Parse the group value into an integer.
+    pub fn parse_u8(&self) -> Result<u8, std::num::ParseIntError> {
+        self.value().parse()
+    }
 }
 
 #[cfg(test)]
@@ -346,15 +366,27 @@ mod tests {
         assert_eq!(tile, Tile::Dragon(Dragon::Red));
         let tile = Tile::new("7", &Suit::Dragon).unwrap();
         assert_eq!(tile, Tile::Dragon(Dragon::Red));
+        let tile: Tile = "rd".to_string().try_into().unwrap();
+        assert_eq!(tile, Tile::Dragon(Dragon::Red));
+        let tile: Tile = "7z".to_string().try_into().unwrap();
+        assert_eq!(tile, Tile::Dragon(Dragon::Red));
 
         let tile = Tile::new("g", &Suit::Dragon).unwrap();
         assert_eq!(tile, Tile::Dragon(Dragon::Green));
         let tile = Tile::new("6", &Suit::Dragon).unwrap();
         assert_eq!(tile, Tile::Dragon(Dragon::Green));
+        let tile: Tile = "gd".to_string().try_into().unwrap();
+        assert_eq!(tile, Tile::Dragon(Dragon::Green));
+        let tile: Tile = "6z".to_string().try_into().unwrap();
+        assert_eq!(tile, Tile::Dragon(Dragon::Green));
 
         let tile = Tile::new("w", &Suit::Dragon).unwrap();
         assert_eq!(tile, Tile::Dragon(Dragon::White));
         let tile = Tile::new("5", &Suit::Dragon).unwrap();
+        assert_eq!(tile, Tile::Dragon(Dragon::White));
+        let tile: Tile = "wd".to_string().try_into().unwrap();
+        assert_eq!(tile, Tile::Dragon(Dragon::White));
+        let tile: Tile = "5z".to_string().try_into().unwrap();
         assert_eq!(tile, Tile::Dragon(Dragon::White));
     }
 

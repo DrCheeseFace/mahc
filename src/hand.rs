@@ -2,25 +2,26 @@ pub mod error;
 
 use crate::fu::Fu;
 use crate::suit::Suit;
+use crate::tile::Tile;
 use crate::tile_group::{GroupType, TileGroup};
 use error::HandErr;
 
 #[derive(Debug)]
 pub struct Hand {
     groups: Vec<TileGroup>,
-    win_tile: TileGroup,
-    seat_tile: TileGroup,
+    win_tile: Tile,
+    seat_tile: Tile,
     /// Prevalent or round wind.
-    prev_tile: TileGroup,
+    prev_tile: Tile,
     isopen: bool,
 }
 
 impl Hand {
     pub fn new(
         groups: Vec<TileGroup>,
-        win_tile: TileGroup,
-        seat_tile: TileGroup,
-        prev_tile: TileGroup,
+        win_tile: Tile,
+        seat_tile: Tile,
+        prev_tile: Tile,
     ) -> Result<Self, HandErr> {
         //TODO: standard hand ONLY CHECK MUST FIX FOR KOKUSHI
         let mut full_shape_count = 0;
@@ -107,9 +108,9 @@ impl Hand {
             tile_groups.push(tile);
         }
 
-        let win_tile: TileGroup = win.try_into()?;
-        let seat_tile: TileGroup = seat.try_into()?;
-        let prev_tile: TileGroup = prev.try_into()?;
+        let win_tile: Tile = win.try_into()?;
+        let seat_tile: Tile = seat.try_into()?;
+        let prev_tile: Tile = prev.try_into()?;
 
         let hand = Hand::new(tile_groups, win_tile, seat_tile, prev_tile)?;
 
@@ -336,17 +337,17 @@ impl Hand {
     }
 
     /// Get the winning tile the completes the hand.
-    pub fn win_tile(&self) -> TileGroup {
+    pub fn win_tile(&self) -> Tile {
         self.win_tile.clone()
     }
 
     /// Get the seat wind.
-    pub fn seat_tile(&self) -> TileGroup {
+    pub fn seat_tile(&self) -> Tile {
         self.seat_tile.clone()
     }
 
     /// Get the prevalent wind.
-    pub fn prev_tile(&self) -> TileGroup {
+    pub fn prev_tile(&self) -> Tile {
         self.prev_tile.clone()
     }
 
