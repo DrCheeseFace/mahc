@@ -16,6 +16,7 @@ pub enum HandErr {
     RinshanIppatsu,
     NoHan,
     NoFu,
+    InvalidTile,
 }
 
 impl std::fmt::Display for HandErr {
@@ -41,6 +42,7 @@ impl std::fmt::Display for HandErr {
             }
             Self::NoHan => write!(f, "No Han provided!"),
             Self::NoFu => write!(f, "No Fu provided!"),
+            Self::InvalidTile => write!(f, "Tile is not valid!"),
         }
     }
 }

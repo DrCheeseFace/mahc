@@ -5,6 +5,7 @@ pub mod limit_hand;
 pub mod payment;
 pub mod score;
 pub mod suit;
+pub mod tile;
 pub mod tile_group;
 pub mod yaku;
 

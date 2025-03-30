@@ -131,8 +131,7 @@ mod test {
         let value = "0".to_string();
         let suit = "z".to_string();
         let actual = Suit::suit_from_string(&suit, &value);
-        let expected = Err(HandErr::InvalidGroup); 
+        let expected = Err(HandErr::InvalidGroup);
         assert_eq!(actual, expected);
-
     }
 }

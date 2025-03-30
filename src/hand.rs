@@ -2,25 +2,26 @@ pub mod error;
 
 use crate::fu::Fu;
 use crate::suit::Suit;
+use crate::tile::{Dragon, Man, Pin, Sou, Tile, Wind};
 use crate::tile_group::{GroupType, TileGroup};
 use error::HandErr;
 
 #[derive(Debug)]
 pub struct Hand {
     groups: Vec<TileGroup>,
-    win_tile: TileGroup,
-    seat_tile: TileGroup,
+    win_tile: Tile,
+    seat_tile: Tile,
     /// Prevalent or round wind.
-    prev_tile: TileGroup,
+    prev_tile: Tile,
     isopen: bool,
 }
 
 impl Hand {
     pub fn new(
         groups: Vec<TileGroup>,
-        win_tile: TileGroup,
-        seat_tile: TileGroup,
-        prev_tile: TileGroup,
+        win_tile: Tile,
+        seat_tile: Tile,
+        prev_tile: Tile,
     ) -> Result<Self, HandErr> {
         //TODO: standard hand ONLY CHECK MUST FIX FOR KOKUSHI
         let mut full_shape_count = 0;
@@ -56,7 +57,7 @@ impl Hand {
             }
             match last_group.group_type {
                 GroupType::Sequence => {
-                    if win_tile.suit != last_group.suit {
+                    if win_tile.suit() != last_group.suit() {
                         return Err(HandErr::InvalidShape);
                     }
 
@@ -68,7 +69,9 @@ impl Hand {
                     }
                 }
                 GroupType::Triplet | GroupType::Pair => {
-                    if last_group.value != win_tile.value || last_group.suit != win_tile.suit {
+                    if last_group.value() != win_tile.value()
+                        || last_group.suit() != win_tile.suit()
+                    {
                         return Err(HandErr::InvalidShape);
                     }
                 }
@@ -105,9 +108,9 @@ impl Hand {
             tile_groups.push(tile);
         }
 
-        let win_tile: TileGroup = win.try_into()?;
-        let seat_tile: TileGroup = seat.try_into()?;
-        let prev_tile: TileGroup = prev.try_into()?;
+        let win_tile: Tile = win.try_into()?;
+        let seat_tile: Tile = seat.try_into()?;
+        let prev_tile: Tile = prev.try_into()?;
 
         let hand = Hand::new(tile_groups, win_tile, seat_tile, prev_tile)?;
 
@@ -130,7 +133,7 @@ impl Hand {
 
         //meld fu cal
         for tile_group in &self.triplets() {
-            let group_is_terminal_or_honor = tile_group.is_honor() || tile_group.isterminal;
+            let group_is_terminal_or_honor = tile_group.is_honor() || tile_group.is_terminal();
 
             if tile_group == self.groups.last().unwrap() {
                 if tsumo {
@@ -163,7 +166,7 @@ impl Hand {
         }
 
         for kan in &self.kans() {
-            let group_is_terminal_or_honor = kan.is_honor() || kan.isterminal;
+            let group_is_terminal_or_honor = kan.is_honor() || kan.is_terminal();
 
             if group_is_terminal_or_honor {
                 if !kan.isopen {
@@ -179,9 +182,9 @@ impl Hand {
         }
 
         for pair in self.pairs() {
-            if pair.value == self.prev_tile.value
-                || pair.value == self.seat_tile.value
-                || pair.suit == Suit::Dragon
+            if pair.value() == self.prev_tile.value()
+                || pair.value() == self.seat_tile.value()
+                || pair.suit() == Suit::Dragon
             {
                 fu_types.push(Fu::Toitsu);
             }
@@ -197,7 +200,7 @@ impl Hand {
                         fu_types.push(Fu::SingleWait);
                     }
 
-                    if !self.win_tile().isterminal && group.isterminal {
+                    if !self.win_tile().is_terminal() && group.is_terminal() {
                         fu_types.push(Fu::SingleWait);
                     }
                 }
@@ -214,7 +217,7 @@ impl Hand {
     ///
     /// ```rust
     /// use mahc::hand::Hand;
-    /// use mahc::tile_group::TileGroup;
+    /// use mahc::tile::Tile;
     /// let hand = Hand::new_from_strings(
     ///     vec![
     ///         "123p".to_string(),
@@ -228,7 +231,7 @@ impl Hand {
     ///     "Ew".to_string(),
     /// )
     /// .unwrap();
-    /// let doras: Vec<TileGroup> = vec![
+    /// let doras: Vec<Tile> = vec![
     ///    "1p".to_string().try_into().unwrap(),
     ///    "4s".to_string().try_into().unwrap(),
     ///    "Nw".to_string().try_into().unwrap(),
@@ -239,40 +242,40 @@ impl Hand {
     /// let dora = hand.get_dora_count(Some(doras));
     /// assert_eq!(dora, 14);
     /// ```
-    pub fn get_dora_count(&self, dora_indicator_tiles: Option<Vec<TileGroup>>) -> u32 {
+    pub fn get_dora_count(&self, dora_indicator_tiles: Option<Vec<Tile>>) -> u32 {
         let mut count = 0;
         for group in &self.groups {
-            if group.isaka {
-                count += 1;
+            for tile in group.tiles.iter() {
+                if tile.is_aka() {
+                    count += 1;
+                }
             }
         }
         if dora_indicator_tiles.is_none() {
             return count;
         }
         for tile in dora_indicator_tiles.unwrap() {
-            let dora_tile = tile.next_tile().unwrap();
+            let dora_tile = tile.clone().next().unwrap();
             for triplet in self.triplets() {
-                if triplet.value == dora_tile.value && triplet.suit == dora_tile.suit {
+                if triplet.tiles[0] == dora_tile {
                     count += 3;
                 }
             }
             for kan in self.kans() {
-                if kan.value == dora_tile.value && kan.suit == dora_tile.suit {
+                if kan.tiles[0] == dora_tile {
                     count += 4;
                 }
             }
             for pair in self.pairs() {
-                if pair.value == dora_tile.value && pair.suit == dora_tile.suit {
+                if pair.tiles[0] == dora_tile {
                     count += 2;
                 }
             }
             for sequence in self.sequences() {
-                if (sequence.value == dora_tile.value
-                    || (sequence.parse_u8().unwrap() + 1).to_string() == dora_tile.value
-                    || (sequence.parse_u8().unwrap() + 2).to_string() == dora_tile.value)
-                    && sequence.suit == dora_tile.suit
-                {
-                    count += 1;
+                for tile in sequence.tiles {
+                    if tile == dora_tile {
+                        count += 1
+                    }
                 }
             }
         }
@@ -332,17 +335,17 @@ impl Hand {
     }
 
     /// Get the winning tile the completes the hand.
-    pub fn win_tile(&self) -> TileGroup {
+    pub fn win_tile(&self) -> Tile {
         self.win_tile.clone()
     }
 
     /// Get the seat wind.
-    pub fn seat_tile(&self) -> TileGroup {
+    pub fn seat_tile(&self) -> Tile {
         self.seat_tile.clone()
     }
 
     /// Get the prevalent wind.
-    pub fn prev_tile(&self) -> TileGroup {
+    pub fn prev_tile(&self) -> Tile {
         self.prev_tile.clone()
     }
 
@@ -357,7 +360,7 @@ impl Hand {
     pub fn is_tanyao(&self) -> bool {
         self.groups
             .iter()
-            .all(|group| !group.isterminal && !group.is_honor())
+            .all(|group| !group.is_terminal() && !group.is_honor())
     }
 
     /// Check if the hand contains two unique identical sequences.
@@ -407,13 +410,13 @@ impl Hand {
         let mut count = 0;
 
         for group in self.triplets().iter().chain(self.kans().iter()) {
-            if group.value == self.prev_tile.value {
+            if group.value() == self.prev_tile.value() {
                 count += 1;
             }
-            if group.value == self.seat_tile.value {
+            if group.value() == self.seat_tile.value() {
                 count += 1;
             }
-            if group.suit == Suit::Dragon {
+            if group.suit() == Suit::Dragon {
                 count += 1;
             }
         }
@@ -451,10 +454,10 @@ impl Hand {
             return false;
         }
 
-        let mut seqs: Vec<_> = self
-            .sequences()
+        let binding = self.sequences();
+        let mut seqs: Vec<_> = binding
             .iter()
-            .map(|group| (group.value.clone(), group.suit.clone()))
+            .map(|group| (group.value(), group.suit().clone()))
             .collect();
 
         seqs.sort();
@@ -477,13 +480,13 @@ impl Hand {
 
         let mut has_honor = false;
         let mut has_normal = false;
-        let mut suit: Option<&Suit> = None;
+        let mut suit: Option<Suit> = None;
         for group in &self.groups {
             if group.is_honor() {
                 has_honor = true;
             } else {
                 has_normal = true;
-                suit = Some(&group.suit);
+                suit = Some(group.suit());
             }
         }
 
@@ -493,7 +496,7 @@ impl Hand {
 
         if let Some(s) = suit {
             for group in &self.groups {
-                if &group.suit != s && !group.is_honor() {
+                if group.suit() != s && !group.is_honor() {
                     return false;
                 }
             }
@@ -510,10 +513,10 @@ impl Hand {
             .triplets()
             .iter()
             .chain(self.kans().iter())
-            .filter(|group| group.suit == Suit::Dragon)
+            .filter(|group| group.suit() == Suit::Dragon)
             .count();
 
-        dragon_count == 2 && self.pairs()[0].suit == Suit::Dragon
+        dragon_count == 2 && self.pairs()[0].suit() == Suit::Dragon
     }
 
     /// Check if the hand only contains groups with at least one terminal tile.
@@ -525,7 +528,7 @@ impl Hand {
         if self
             .groups
             .iter()
-            .any(|group| group.is_honor() || !group.isterminal)
+            .any(|group| group.is_honor() || !group.is_terminal())
         {
             return false;
         }
@@ -546,12 +549,14 @@ impl Hand {
         let mut has_terminal: bool = false;
         let mut has_honor: bool = false;
         for group in self.groups.clone() {
-            if group.isterminal {
-                has_terminal = true;
-            } else if group.is_honor() {
-                has_honor = true;
-            } else {
-                return false;
+            for tile in group.tiles.iter() {
+                if tile.is_honor() {
+                    has_honor = true
+                } else if tile.is_terminal() {
+                    has_terminal = true
+                } else {
+                    return false;
+                }
             }
         }
 
@@ -571,9 +576,9 @@ impl Hand {
             let values: Vec<String> = self
                 .sequences()
                 .iter()
-                .filter(|&x| x.suit == *suit)
-                .map(|x| x.value.clone())
-                .collect();
+                .filter(|&x| x.suit() == *suit)
+                .map(|x| x.value().to_string())
+                .collect::<_>();
 
             values.contains(&"1".to_string())
                 && values.contains(&"4".to_string())
@@ -596,7 +601,7 @@ impl Hand {
         let mut has_terminal = false;
         let mut has_honor = false;
         for group in self.groups.clone() {
-            if group.isterminal {
+            if group.is_terminal() {
                 has_terminal = true;
             } else if group.is_honor() {
                 has_honor = true;
@@ -645,7 +650,7 @@ impl Hand {
 
         let mut list_of_vals: Vec<String> = vec![];
         for group in self.triplets().iter().chain(self.kans().iter()) {
-            list_of_vals.push(group.value.clone());
+            list_of_vals.push(group.value().to_string());
         }
         list_of_vals.sort();
 
@@ -667,7 +672,7 @@ impl Hand {
             return false;
         }
 
-        let mut suits: Vec<Suit> = self.groups.iter().map(|x| x.suit.clone()).collect();
+        let mut suits: Vec<Suit> = self.groups.iter().map(|x| x.suit().clone()).collect();
         suits.dedup();
 
         suits.len() == 1
@@ -677,16 +682,16 @@ impl Hand {
 
     /// Check if the hand contains three dragon triplets (or quads).
     pub fn is_daisangen(&self) -> bool {
-        let trips: Vec<String> = self
+        let trips: Vec<Tile> = self
             .triplets()
             .iter()
             .chain(self.kans().iter())
-            .map(|x| x.value.clone())
+            .map(|x| x.tiles[0].clone())
             .collect();
 
-        trips.contains(&"r".to_string())
-            && trips.contains(&"g".to_string())
-            && trips.contains(&"w".to_string())
+        trips.contains(&Tile::Dragon(Dragon::Red))
+            && trips.contains(&Tile::Dragon(Dragon::Green))
+            && trips.contains(&Tile::Dragon(Dragon::White))
     }
 
     /// Check if the hand contains four concealed triplets.
@@ -738,7 +743,7 @@ impl Hand {
         }
 
         for group in self.groups.clone() {
-            if !group.isterminal {
+            if !group.is_terminal() {
                 return false;
             }
         }
@@ -754,28 +759,22 @@ impl Hand {
             return false;
         }
 
-        if !self
-            .triplets()
-            .iter()
-            .chain(self.kans().iter())
-            .chain(self.pairs().iter())
-            .all(|group| ["2", "3", "4", "6", "8", "g"].contains(&group.value.as_str()))
-        {
-            return false;
-        }
-
-        for group in self.sequences() {
-            if group.value != "2" {
-                return false;
+        for groups in self.groups.iter() {
+            for tile in groups.tiles.iter() {
+                if ![
+                    Tile::Dragon(Dragon::Green),
+                    Tile::Sou(Sou::TwoSou),
+                    Tile::Sou(Sou::ThreeSou),
+                    Tile::Sou(Sou::FourSou),
+                    Tile::Sou(Sou::SixSou),
+                    Tile::Sou(Sou::EightSou),
+                ]
+                .contains(tile)
+                {
+                    return false;
+                }
             }
         }
-
-        for group in self.groups.clone() {
-            if group.suit != Suit::Souzu && group.suit != Suit::Dragon {
-                return false;
-            }
-        }
-
         true
     }
 
@@ -785,33 +784,33 @@ impl Hand {
             return false;
         }
 
-        let suit: Suit = self.groups[0].suit.clone();
+        let suit: Suit = self.groups[0].suit().clone();
         if self.triplets().len() != 2 || self.sequences().len() != 2 || self.pairs().len() != 1 {
             return false;
         }
 
         for group in self.groups.clone() {
-            if group.suit != suit {
+            if group.suit() != suit {
                 return false;
             }
         }
 
-        let has_1 = self.triplets().clone().iter().any(|i| i.value == "1");
-        let has_9 = self.triplets().clone().iter().any(|i| i.value == "9");
+        let has_1 = self.triplets().clone().iter().any(|i| i.value() == "1");
+        let has_9 = self.triplets().clone().iter().any(|i| i.value() == "9");
         if !has_1 || !has_9 {
             return false;
         }
 
         let mut vals: Vec<u8> = vec![];
         for sequence_group in self.sequences() {
-            let int = sequence_group.value.parse::<u8>().unwrap();
+            let int = sequence_group.value().parse::<u8>().unwrap();
             vals.push(int);
             vals.push(int + 1);
             vals.push(int + 2);
         }
 
         for pair_group in self.pairs() {
-            let int = pair_group.value.parse::<u8>().unwrap();
+            let int = pair_group.value().parse::<u8>().unwrap();
             vals.push(int);
         }
 
@@ -871,7 +870,7 @@ impl Hand {
     pub fn is_shousuushii(&self) -> bool {
         self.groups
             .iter()
-            .filter(|i| i.suit == Suit::Wind && i.group_type != GroupType::None)
+            .filter(|i| i.suit() == Suit::Wind && i.group_type != GroupType::None)
             .count()
             == 4
     }
@@ -881,7 +880,7 @@ impl Hand {
         self.triplets()
             .iter()
             .chain(self.kans().iter())
-            .filter(|i| i.suit == Suit::Wind)
+            .filter(|i| i.suit() == Suit::Wind)
             .count()
             == 4
     }
@@ -893,26 +892,23 @@ impl Hand {
         }
 
         let mut orphans = vec![
-            ("1", Suit::Manzu),
-            ("9", Suit::Manzu),
-            ("1", Suit::Pinzu),
-            ("9", Suit::Pinzu),
-            ("1", Suit::Souzu),
-            ("9", Suit::Souzu),
-            ("E", Suit::Wind),
-            ("S", Suit::Wind),
-            ("W", Suit::Wind),
-            ("N", Suit::Wind),
-            ("r", Suit::Dragon),
-            ("g", Suit::Dragon),
-            ("w", Suit::Dragon),
+            Tile::Man(Man::OneMan),
+            Tile::Man(Man::NineMan),
+            Tile::Sou(Sou::OneSou),
+            Tile::Sou(Sou::NineSou),
+            Tile::Pin(Pin::OnePin),
+            Tile::Pin(Pin::NinePin),
+            Tile::Wind(Wind::East),
+            Tile::Wind(Wind::South),
+            Tile::Wind(Wind::West),
+            Tile::Wind(Wind::North),
+            Tile::Dragon(Dragon::Red),
+            Tile::Dragon(Dragon::White),
+            Tile::Dragon(Dragon::Green),
         ];
 
         for tile in self.groups.iter() {
-            if let Some(pos) = orphans
-                .iter()
-                .position(|(value, suit)| value == &tile.value && suit == &tile.suit)
-            {
+            if let Some(pos) = orphans.iter().position(|orphan| orphan == &tile.tiles[0]) {
                 orphans.remove(pos);
             } else {
                 return false;
@@ -931,7 +927,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_tenhou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile().value == "E" {
+        if tenhou && self.seat_tile() == Tile::Wind(Wind::East) {
             return true;
         }
         false
@@ -941,7 +937,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_chiihou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile().value != "E" {
+        if tenhou && self.seat_tile() == Tile::Wind(Wind::East) {
             return true;
         }
         false
@@ -1382,6 +1378,7 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chinroutou());
+
         let out = Hand::new_from_strings(
             vec![
                 "rrrd".to_string(),
@@ -1396,6 +1393,7 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chinroutou());
+
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -2581,7 +2579,8 @@ mod tests {
 mod tile_group_tests {
     use super::Hand;
     use crate::suit::Suit;
-    use crate::tile_group::{GroupType, TileGroup};
+    use crate::tile::Tile;
+    use crate::tile_group::GroupType;
 
     #[test]
     fn identify_pair() {
@@ -2598,9 +2597,9 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.pairs()[0].value, "S");
+        assert_eq!(out.pairs()[0].value(), "S");
         assert_eq!(out.pairs()[0].group_type, GroupType::Pair);
-        assert_eq!(out.pairs()[0].suit, Suit::Wind);
+        assert_eq!(out.pairs()[0].suit(), Suit::Wind);
         assert!(!out.pairs()[0].isopen);
     }
 
@@ -2620,9 +2619,9 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.triplets()[0].value, "S");
+        assert_eq!(out.triplets()[0].value(), "S");
         assert_eq!(out.triplets()[0].group_type, GroupType::Triplet);
-        assert_eq!(out.triplets()[0].suit, Suit::Wind);
+        assert_eq!(out.triplets()[0].suit(), Suit::Wind);
         assert!(!out.triplets()[0].isopen);
     }
 
@@ -2642,9 +2641,9 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.kans()[0].value, "E");
+        assert_eq!(out.kans()[0].value(), "E");
         assert_eq!(out.kans()[0].group_type, GroupType::Kan);
-        assert_eq!(out.kans()[0].suit, Suit::Wind);
+        assert_eq!(out.kans()[0].suit(), Suit::Wind);
         assert!(out.kans()[0].isopen);
     }
 
@@ -2664,9 +2663,9 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.kans()[0].value, "r");
+        assert_eq!(out.kans()[0].value(), "r");
         assert_eq!(out.kans()[0].group_type, GroupType::Kan);
-        assert_eq!(out.kans()[0].suit, Suit::Dragon);
+        assert_eq!(out.kans()[0].suit(), Suit::Dragon);
         assert!(!out.kans()[0].isopen);
     }
 
@@ -2685,9 +2684,9 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.triplets()[0].value, "1");
+        assert_eq!(out.triplets()[0].value(), "1");
         assert_eq!(out.triplets()[0].group_type, GroupType::Triplet);
-        assert_eq!(out.triplets()[0].suit, Suit::Manzu);
+        assert_eq!(out.triplets()[0].suit(), Suit::Manzu);
         assert!(!out.triplets()[0].isopen);
     }
 
@@ -2706,9 +2705,9 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.sequences()[0].value, "7");
+        assert_eq!(out.sequences()[0].value(), "7");
         assert_eq!(out.sequences()[0].group_type, GroupType::Sequence);
-        assert_eq!(out.sequences()[0].suit, Suit::Souzu);
+        assert_eq!(out.sequences()[0].suit(), Suit::Souzu);
         assert!(!out.sequences()[0].isopen);
     }
 
@@ -2727,9 +2726,9 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.sequences()[0].value, "2");
+        assert_eq!(out.sequences()[0].value(), "2");
         assert_eq!(out.sequences()[0].group_type, GroupType::Sequence);
-        assert_eq!(out.sequences()[0].suit, Suit::Pinzu);
+        assert_eq!(out.sequences()[0].suit(), Suit::Pinzu);
         assert!(out.sequences()[0].isopen);
     }
     #[test]
@@ -2747,11 +2746,11 @@ mod tile_group_tests {
             "Ew".to_string(),
         )
         .unwrap();
-        let dora_1: TileGroup = "1p".to_string().try_into().unwrap();
-        let dora_2: TileGroup = "4s".to_string().try_into().unwrap();
-        let dora_3: TileGroup = "Nw".to_string().try_into().unwrap();
-        let dora_4: TileGroup = "8m".to_string().try_into().unwrap();
-        let dora_5: TileGroup = "gd".to_string().try_into().unwrap();
+        let dora_1: Tile = "1p".to_string().try_into().unwrap();
+        let dora_2: Tile = "4s".to_string().try_into().unwrap();
+        let dora_3: Tile = "Nw".to_string().try_into().unwrap();
+        let dora_4: Tile = "8m".to_string().try_into().unwrap();
+        let dora_5: Tile = "gd".to_string().try_into().unwrap();
         let doras = vec![dora_1, dora_2, dora_3, dora_4, dora_5];
 
         let dora = out.get_dora_count(Some(doras));

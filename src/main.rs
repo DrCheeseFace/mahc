@@ -8,7 +8,7 @@ use mahc::hand::error::HandErr;
 use mahc::hand::Hand;
 use mahc::payment::Payment;
 use mahc::score::{FuValue, HanValue, HonbaCounter, Score};
-use mahc::tile_group::TileGroup;
+use mahc::tile::Tile;
 use serde_json::json;
 
 /// riichi mahjong calculator tool
@@ -135,7 +135,7 @@ pub fn parse_hand(args: &Args) -> Result<String, HandErr> {
         args.prev.clone(),
         args.seat.clone(),
     )?;
-    let doras: Option<Vec<TileGroup>> = args.dora.clone().map(|dora_tiles| {
+    let doras: Option<Vec<Tile>> = args.dora.clone().map(|dora_tiles| {
         dora_tiles
             .into_iter()
             .filter_map(|tile| tile.try_into().ok())
