@@ -155,13 +155,14 @@ impl GroupType {
     ///
     /// assert_eq!(actual, expected);
     /// ```
-    pub fn group_type_from_string(mut group: String) -> Result<Self, HandErr> {
+    pub fn group_type_from_string(group: String) -> Result<Self, HandErr> {
         let count = if group.contains(OPEN_CHAR) {
             group.len() - 2
         } else {
             group.len() - 1
         };
-        group = group.replace(AKAFIVE_VALUE, &FIVE_VALUE.to_string());
+        //easier to do this instead of mess with akadora values :|
+        let group = group.replace(AKAFIVE_VALUE, &FIVE_VALUE.to_string());
 
         if let Some(sub_group) = group.get(0..count) {
             for i in sub_group.chars() {
@@ -201,7 +202,13 @@ impl GroupType {
         }
 
         match count {
-            2 => Ok(Self::Pair),
+            2 => {
+                if group.chars().nth(0).unwrap() == group.chars().nth(1).unwrap() {
+                    Ok(Self::Pair)
+                } else {
+                    Err(HandErr::InvalidGroup)
+                }
+            }
             3 => {
                 if group.chars().nth(0).unwrap() == group.chars().nth(1).unwrap()
                     && group.chars().nth(1).unwrap() == group.chars().nth(2).unwrap()
@@ -218,7 +225,16 @@ impl GroupType {
                     return Err(HandErr::InvalidGroup);
                 }
             }
-            4 => Ok(Self::Kan),
+            4 => {
+                if group.chars().nth(0).unwrap() == group.chars().nth(1).unwrap()
+                    && group.chars().nth(1).unwrap() == group.chars().nth(2).unwrap()
+                    && group.chars().nth(2).unwrap() == group.chars().nth(3).unwrap()
+                {
+                    Ok(Self::Kan)
+                } else {
+                    Err(HandErr::InvalidGroup)
+                }
+            }
             1 => Ok(Self::None),
             _ => Err(HandErr::InvalidGroup),
         }
@@ -360,5 +376,62 @@ mod tests {
         assert_eq!(tile.value(), ONE_VALUE);
         assert_eq!(tile.tiles[0].is_aka(), false);
         assert_eq!(tile.group_type, GroupType::None);
+    }
+
+    #[test]
+    fn validate_pair_from_string() {
+        let tile = TileGroup::try_from("12m".to_string());
+        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+
+        let tile = TileGroup::try_from("11m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Pair);
+
+        let tile = TileGroup::try_from("05m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Pair);
+    }
+
+    #[test]
+    fn validate_triplet_from_string() {
+        let tile = TileGroup::try_from("112m".to_string());
+        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+
+        let tile = TileGroup::try_from("122m".to_string());
+        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+
+        let tile = TileGroup::try_from("111m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Triplet);
+
+        let tile = TileGroup::try_from("050m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Triplet);
+    }
+
+    #[test]
+    fn validate_sequence_from_string() {
+        let tile = TileGroup::try_from("124m".to_string());
+        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+
+        let tile = TileGroup::try_from("1234m".to_string());
+        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+
+        let tile = TileGroup::try_from("567m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Sequence);
+
+        let tile = TileGroup::try_from("406m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Sequence);
+    }
+
+    #[test]
+    fn validate_kan_from_string() {
+        let tile = TileGroup::try_from("1112m".to_string());
+        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+
+        let tile = TileGroup::try_from("1222m".to_string());
+        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+
+        let tile = TileGroup::try_from("1111m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Kan);
+
+        let tile = TileGroup::try_from("0505m".to_string()).unwrap();
+        assert_eq!(tile.group_type, GroupType::Kan);
     }
 }

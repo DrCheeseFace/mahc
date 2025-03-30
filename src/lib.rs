@@ -48,4 +48,6 @@ const DRAGON_SUIT_CHAR: char = 'd';
 const WIND_SUIT_CHAR: char = 'w';
 const Z_SUIT_CHAR: char = 'z';
 
-const VALID_SEQUENCE_VALUES: &'static [&str] = &["123", "234", "345", "456", "567", "678", "789"];
+const VALID_SEQUENCE_VALUES: &[&str] = &[
+    "123", "234", "345", "456", "567", "678", "789", "340", "406", "067",
+];
