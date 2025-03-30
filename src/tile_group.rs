@@ -1,6 +1,12 @@
 use crate::hand::error::HandErr;
 use crate::suit::Suit;
 use crate::tile::Tile;
+use crate::{
+    AKAFIVE_VALUE, EAST_VALUE, EAST_VALUE_Z, EIGHT_VALUE, FIVE_VALUE, FOUR_VALUE, GREEN_VALUE,
+    GREEN_VALUE_Z, NINE_VALUE, NORTH_VALUE, NORTH_VALUE_Z, ONE_VALUE, OPEN_CHAR, RED_VALUE,
+    RED_VALUE_Z, SEVEN_VALUE, SIX_VALUE, SOUTH_VALUE, SOUTH_VALUE_Z, THREE_VALUE, TWO_VALUE,
+    VALID_SEQUENCE_VALUES, WEST_VALUE, WEST_VALUE_Z, WHITE_VALUE, WHITE_VALUE_Z, Z_SUIT_CHAR,
+};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TileGroup {
@@ -12,26 +18,26 @@ pub struct TileGroup {
 impl TryFrom<String> for TileGroup {
     type Error = HandErr;
     fn try_from(group: String) -> Result<Self, Self::Error> {
-        let isopen = group.chars().last().unwrap().to_string() == "o";
+        let isopen = group.chars().last().unwrap() == OPEN_CHAR;
 
-        let value = group.chars().nth(0).unwrap().to_string();
+        let value = group.chars().nth(0).unwrap();
 
         let suitchar = if !isopen {
-            group.chars().last().unwrap().to_string()
+            group.chars().last().unwrap()
         } else {
-            group.chars().nth(group.len() - 2).unwrap().to_string()
+            group.chars().nth(group.len() - 2).unwrap()
         };
 
-        let suit = Suit::suit_from_string(&suitchar, &value)?;
-        let value = if suitchar == "z" {
-            match value.as_str() {
-                "1" => "E".to_string(),
-                "2" => "S".to_string(),
-                "3" => "W".to_string(),
-                "4" => "N".to_string(),
-                "5" => "w".to_string(),
-                "6" => "g".to_string(),
-                "7" => "r".to_string(),
+        let suit = Suit::suit_from_string(suitchar, value)?;
+        let value = if suitchar == Z_SUIT_CHAR {
+            match value {
+                EAST_VALUE_Z => EAST_VALUE,
+                SOUTH_VALUE_Z => SOUTH_VALUE,
+                WEST_VALUE_Z => WEST_VALUE,
+                NORTH_VALUE_Z => NORTH_VALUE,
+                WHITE_VALUE_Z => WHITE_VALUE,
+                GREEN_VALUE_Z => GREEN_VALUE,
+                RED_VALUE_Z => RED_VALUE,
                 _ => value,
             }
         } else {
@@ -40,34 +46,34 @@ impl TryFrom<String> for TileGroup {
 
         let group_type = GroupType::group_type_from_string(group.to_string())?;
         let mut tiles: Vec<Tile> = Vec::new();
-        let tile = Tile::new(&value, &suit)?;
+        let tile = Tile::new(value, &suit)?;
 
         match group_type {
             GroupType::Sequence => {
                 for i in 0..3 {
-                    let value = group.chars().nth(i).unwrap().to_string();
-                    let tile = Tile::new(&value, &suit)?;
+                    let value = group.chars().nth(i).unwrap();
+                    let tile = Tile::new(value, &suit)?;
                     tiles.push(tile.clone());
                 }
             }
             GroupType::Triplet => {
                 for i in 0..3 {
-                    let value = group.chars().nth(i).unwrap().to_string();
-                    let tile = Tile::new(&value, &suit)?;
+                    let value = group.chars().nth(i).unwrap();
+                    let tile = Tile::new(value, &suit)?;
                     tiles.push(tile.clone());
                 }
             }
             GroupType::Kan => {
                 for i in 0..4 {
-                    let value = group.chars().nth(i).unwrap().to_string();
-                    let tile = Tile::new(&value, &suit)?;
+                    let value = group.chars().nth(i).unwrap();
+                    let tile = Tile::new(value, &suit)?;
                     tiles.push(tile.clone());
                 }
             }
             GroupType::Pair => {
                 tiles.push(tile.clone());
-                let value = group.chars().nth(1).unwrap().to_string();
-                let tile = Tile::new(&value, &suit)?;
+                let value = group.chars().nth(1).unwrap();
+                let tile = Tile::new(value, &suit)?;
                 tiles.push(tile.clone());
             }
             GroupType::None => tiles.push(tile.clone()),
@@ -100,12 +106,12 @@ impl TileGroup {
 
     /// Parse the group value into an integer.
     pub fn parse_u8(&self) -> Result<u8, std::num::ParseIntError> {
-        self.value().parse()
+        self.value().to_string().parse()
     }
 
     /// Get value of tilegroup
-    pub fn value(&self) -> &str {
-        return self.tiles[0].value();
+    pub fn value(&self) -> char {
+        self.tiles[0].value()
     }
 
     /// Check if tilegroup contains a terminal
@@ -150,16 +156,43 @@ impl GroupType {
     /// assert_eq!(actual, expected);
     /// ```
     pub fn group_type_from_string(mut group: String) -> Result<Self, HandErr> {
-        let count = if group.contains('o') {
+        let count = if group.contains(OPEN_CHAR) {
             group.len() - 2
         } else {
             group.len() - 1
         };
-        group = group.replace('0', "5");
+        group = group.replace(AKAFIVE_VALUE, &FIVE_VALUE.to_string());
 
         if let Some(sub_group) = group.get(0..count) {
             for i in sub_group.chars() {
-                if !"123456789ESWNrgw".contains(i) {
+                if ![
+                    ONE_VALUE,
+                    TWO_VALUE,
+                    THREE_VALUE,
+                    FOUR_VALUE,
+                    FIVE_VALUE,
+                    SIX_VALUE,
+                    SEVEN_VALUE,
+                    EIGHT_VALUE,
+                    NINE_VALUE,
+                    AKAFIVE_VALUE,
+                    EAST_VALUE,
+                    EAST_VALUE_Z,
+                    SOUTH_VALUE,
+                    SOUTH_VALUE_Z,
+                    WEST_VALUE,
+                    WEST_VALUE_Z,
+                    NORTH_VALUE,
+                    NORTH_VALUE_Z,
+                    RED_VALUE,
+                    RED_VALUE_Z,
+                    WHITE_VALUE,
+                    WHITE_VALUE_Z,
+                    GREEN_VALUE,
+                    GREEN_VALUE_Z,
+                ]
+                .contains(&i)
+                {
                     return Err(HandErr::InvalidGroup);
                 }
             }
@@ -174,7 +207,7 @@ impl GroupType {
                     && group.chars().nth(1).unwrap() == group.chars().nth(2).unwrap()
                 {
                     Ok(Self::Triplet)
-                } else if ["123", "234", "345", "456", "567", "678", "789"]
+                } else if VALID_SEQUENCE_VALUES
                     .iter()
                     .cloned()
                     .collect::<std::collections::HashSet<&str>>()
@@ -204,13 +237,15 @@ impl GroupType {
 
 #[cfg(test)]
 mod tests {
+    use crate::{FOUR_VALUE, ONE_VALUE};
+
     use super::*;
 
     #[test]
     fn non_honor_tilegroup_from_string() {
         let tile = TileGroup::try_from("1m".to_string()).unwrap();
         assert_eq!(tile.suit(), Suit::Manzu);
-        assert_eq!(tile.value(), "1");
+        assert_eq!(tile.value(), ONE_VALUE);
         assert!(!tile.isopen);
         assert_eq!(tile.group_type, GroupType::None);
         assert!(tile.is_terminal());
@@ -234,7 +269,7 @@ mod tests {
     fn wind_tilegroup_from_string() {
         let tile = TileGroup::try_from("1z".to_string()).unwrap();
         assert_eq!(tile.suit(), Suit::Wind);
-        assert_eq!(tile.value(), "E");
+        assert_eq!(tile.value(), EAST_VALUE);
         assert!(!tile.isopen);
         assert_eq!(tile.group_type, GroupType::None);
         assert_eq!(tile.is_terminal(), false);
@@ -243,26 +278,26 @@ mod tests {
         assert!(tile.isopen);
         assert_eq!(tile.group_type, GroupType::Triplet);
         assert_eq!(tile.suit(), Suit::Wind);
-        assert_eq!(tile.value(), "S");
+        assert_eq!(tile.value(), SOUTH_VALUE);
 
         let tile = TileGroup::try_from("EEEEw".to_string()).unwrap();
         assert!(!tile.isopen);
         assert_eq!(tile.group_type, GroupType::Kan);
         assert_eq!(tile.suit(), Suit::Wind);
-        assert_eq!(tile.value(), "E");
+        assert_eq!(tile.value(), EAST_VALUE);
     }
 
     #[test]
     fn dragon_tilegroup_from_string() {
         let tile = TileGroup::try_from("5z".to_string()).unwrap();
         assert_eq!(tile.suit(), Suit::Dragon);
-        assert_eq!(tile.value(), "w");
+        assert_eq!(tile.value(), WHITE_VALUE);
         assert!(!tile.isopen);
         assert_eq!(tile.group_type, GroupType::None);
 
         let tile = TileGroup::try_from("666zo".to_string()).unwrap();
         assert_eq!(tile.suit(), Suit::Dragon);
-        assert_eq!(tile.value(), "g");
+        assert_eq!(tile.value(), GREEN_VALUE);
         assert!(tile.isopen);
         assert_eq!(tile.group_type, GroupType::Triplet);
 
@@ -270,7 +305,7 @@ mod tests {
         assert!(!tile.isopen);
         assert_eq!(tile.group_type, GroupType::Kan);
         assert_eq!(tile.suit(), Suit::Dragon);
-        assert_eq!(tile.value(), "r");
+        assert_eq!(tile.value(), RED_VALUE);
     }
 
     #[test]
@@ -300,19 +335,19 @@ mod tests {
     #[test]
     fn is_akadora_from_string() {
         let tile = TileGroup::try_from("0m".to_string()).unwrap();
-        assert_eq!(tile.value(), "5");
+        assert_eq!(tile.value(), FIVE_VALUE);
         assert_eq!(tile.tiles[0].is_aka(), true);
         assert_eq!(tile.group_type, GroupType::None);
 
         let tile = TileGroup::try_from("055m".to_string()).unwrap();
-        assert_eq!(tile.value(), "5");
+        assert_eq!(tile.value(), FIVE_VALUE);
         assert_eq!(tile.tiles[0].is_aka(), true);
         assert_eq!(tile.tiles[1].is_aka(), false);
         assert_eq!(tile.tiles[2].is_aka(), false);
         assert_eq!(tile.group_type, GroupType::Triplet);
 
         let tile = TileGroup::try_from("406m".to_string()).unwrap();
-        assert_eq!(tile.value(), "4");
+        assert_eq!(tile.value(), FOUR_VALUE);
         assert_eq!(tile.tiles[0].is_aka(), false);
         assert_eq!(tile.tiles[1].is_aka(), true);
         assert_eq!(tile.tiles[2].is_aka(), false);
@@ -322,7 +357,7 @@ mod tests {
     #[test]
     fn is_not_akadora_from_string() {
         let tile = TileGroup::try_from("1m".to_string()).unwrap();
-        assert_eq!(tile.value(), "1");
+        assert_eq!(tile.value(), ONE_VALUE);
         assert_eq!(tile.tiles[0].is_aka(), false);
         assert_eq!(tile.group_type, GroupType::None);
     }

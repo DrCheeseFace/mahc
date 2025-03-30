@@ -4,6 +4,7 @@ use crate::fu::Fu;
 use crate::suit::Suit;
 use crate::tile::{Dragon, Man, Pin, Sou, Tile, Wind};
 use crate::tile_group::{GroupType, TileGroup};
+use crate::{NINE_VALUE, ONE_VALUE};
 use error::HandErr;
 
 #[derive(Debug)]
@@ -795,22 +796,30 @@ impl Hand {
             }
         }
 
-        let has_1 = self.triplets().clone().iter().any(|i| i.value() == "1");
-        let has_9 = self.triplets().clone().iter().any(|i| i.value() == "9");
+        let has_1 = self
+            .triplets()
+            .clone()
+            .iter()
+            .any(|i| i.value() == ONE_VALUE);
+        let has_9 = self
+            .triplets()
+            .clone()
+            .iter()
+            .any(|i| i.value() == NINE_VALUE);
         if !has_1 || !has_9 {
             return false;
         }
 
         let mut vals: Vec<u8> = vec![];
         for sequence_group in self.sequences() {
-            let int = sequence_group.value().parse::<u8>().unwrap();
+            let int = sequence_group.value().to_string().parse::<u8>().unwrap();
             vals.push(int);
             vals.push(int + 1);
             vals.push(int + 2);
         }
 
         for pair_group in self.pairs() {
-            let int = pair_group.value().parse::<u8>().unwrap();
+            let int = pair_group.value().to_string().parse::<u8>().unwrap();
             vals.push(int);
         }
 
@@ -2581,6 +2590,7 @@ mod tile_group_tests {
     use crate::suit::Suit;
     use crate::tile::Tile;
     use crate::tile_group::GroupType;
+    use crate::{EAST_VALUE, ONE_VALUE, RED_VALUE, SEVEN_VALUE, SOUTH_VALUE, TWO_VALUE};
 
     #[test]
     fn identify_pair() {
@@ -2597,7 +2607,7 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.pairs()[0].value(), "S");
+        assert_eq!(out.pairs()[0].value(), SOUTH_VALUE);
         assert_eq!(out.pairs()[0].group_type, GroupType::Pair);
         assert_eq!(out.pairs()[0].suit(), Suit::Wind);
         assert!(!out.pairs()[0].isopen);
@@ -2619,7 +2629,7 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.triplets()[0].value(), "S");
+        assert_eq!(out.triplets()[0].value(), SOUTH_VALUE);
         assert_eq!(out.triplets()[0].group_type, GroupType::Triplet);
         assert_eq!(out.triplets()[0].suit(), Suit::Wind);
         assert!(!out.triplets()[0].isopen);
@@ -2641,7 +2651,7 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.kans()[0].value(), "E");
+        assert_eq!(out.kans()[0].value(), EAST_VALUE);
         assert_eq!(out.kans()[0].group_type, GroupType::Kan);
         assert_eq!(out.kans()[0].suit(), Suit::Wind);
         assert!(out.kans()[0].isopen);
@@ -2663,7 +2673,7 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.kans()[0].value(), "r");
+        assert_eq!(out.kans()[0].value(), RED_VALUE);
         assert_eq!(out.kans()[0].group_type, GroupType::Kan);
         assert_eq!(out.kans()[0].suit(), Suit::Dragon);
         assert!(!out.kans()[0].isopen);
@@ -2684,7 +2694,7 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.triplets()[0].value(), "1");
+        assert_eq!(out.triplets()[0].value(), ONE_VALUE);
         assert_eq!(out.triplets()[0].group_type, GroupType::Triplet);
         assert_eq!(out.triplets()[0].suit(), Suit::Manzu);
         assert!(!out.triplets()[0].isopen);
@@ -2705,7 +2715,7 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.sequences()[0].value(), "7");
+        assert_eq!(out.sequences()[0].value(), SEVEN_VALUE);
         assert_eq!(out.sequences()[0].group_type, GroupType::Sequence);
         assert_eq!(out.sequences()[0].suit(), Suit::Souzu);
         assert!(!out.sequences()[0].isopen);
@@ -2726,7 +2736,7 @@ mod tile_group_tests {
             "3s".to_string(),
         )
         .unwrap();
-        assert_eq!(out.sequences()[0].value(), "2");
+        assert_eq!(out.sequences()[0].value(), TWO_VALUE);
         assert_eq!(out.sequences()[0].group_type, GroupType::Sequence);
         assert_eq!(out.sequences()[0].suit(), Suit::Pinzu);
         assert!(out.sequences()[0].isopen);

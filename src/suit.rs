@@ -1,4 +1,10 @@
-use crate::hand::error::HandErr;
+use crate::{
+    hand::error::HandErr, AKAFIVE_VALUE, DRAGON_SUIT_CHAR, EAST_VALUE, EAST_VALUE_Z, EIGHT_VALUE,
+    FIVE_VALUE, FOUR_VALUE, GREEN_VALUE, GREEN_VALUE_Z, MAN_SUIT_CHAR, NINE_VALUE, NORTH_VALUE,
+    NORTH_VALUE_Z, ONE_VALUE, PIN_SUIT_CHAR, RED_VALUE, RED_VALUE_Z, SEVEN_VALUE, SIX_VALUE,
+    SOUTH_VALUE, SOUTH_VALUE_Z, SOU_SUIT_CHAR, THREE_VALUE, TWO_VALUE, WEST_VALUE, WEST_VALUE_Z,
+    WHITE_VALUE, WHITE_VALUE_Z, WIND_SUIT_CHAR, Z_SUIT_CHAR,
+};
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
 pub enum Suit {
@@ -18,45 +24,57 @@ impl Suit {
     /// use mahc::suit::Suit;
     ///
     /// let tile_string = "9m";
-    /// let actual_suit = Suit::suit_from_string(&tile_string.chars().nth(1).unwrap().to_string(), &tile_string.chars().nth(0).unwrap().to_string());
+    /// let actual_suit = Suit::suit_from_string(tile_string.chars().nth(1).unwrap(), tile_string.chars().nth(0).unwrap());
     /// let expected = Ok(Suit::Manzu);
     ///
     /// assert_eq!(actual_suit, expected);
     ///
     /// let tile_string = "6z";
-    /// let actual_suit = Suit::suit_from_string(&tile_string.chars().nth(1).unwrap().to_string(), &tile_string.chars().nth(0).unwrap().to_string());
+    /// let actual_suit = Suit::suit_from_string(tile_string.chars().nth(1).unwrap(), tile_string.chars().nth(0).unwrap());
     /// let expected = Ok(Suit::Dragon);
     ///
     /// assert_eq!(actual_suit, expected);
     /// ```
-    pub fn suit_from_string(suit: &str, value: &str) -> Result<Self, HandErr> {
-        if ["s", "p", "m"].contains(&suit)
-            && !["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"].contains(&value)
+    pub fn suit_from_string(suit: char, value: char) -> Result<Self, HandErr> {
+        if [SOU_SUIT_CHAR, PIN_SUIT_CHAR, MAN_SUIT_CHAR].contains(&suit)
+            && ![
+                AKAFIVE_VALUE,
+                ONE_VALUE,
+                TWO_VALUE,
+                THREE_VALUE,
+                FOUR_VALUE,
+                FIVE_VALUE,
+                SIX_VALUE,
+                SEVEN_VALUE,
+                EIGHT_VALUE,
+                NINE_VALUE,
+            ]
+            .contains(&value)
         {
             return Err(HandErr::InvalidGroup);
         }
         match suit {
-            "s" => Ok(Self::Souzu),
-            "p" => Ok(Self::Pinzu),
-            "m" => Ok(Self::Manzu),
-            "w" => {
-                if !["E", "S", "W", "N"].contains(&value) {
+            SOU_SUIT_CHAR => Ok(Self::Souzu),
+            PIN_SUIT_CHAR => Ok(Self::Pinzu),
+            MAN_SUIT_CHAR => Ok(Self::Manzu),
+            WIND_SUIT_CHAR => {
+                if ![EAST_VALUE, SOUTH_VALUE, WEST_VALUE, NORTH_VALUE].contains(&value) {
                     Err(HandErr::InvalidGroup)
                 } else {
                     Ok(Self::Wind)
                 }
             }
-            "d" => {
-                if !["r", "g", "w"].contains(&value) {
+            DRAGON_SUIT_CHAR => {
+                if ![RED_VALUE, GREEN_VALUE, WHITE_VALUE].contains(&value) {
                     Err(HandErr::InvalidGroup)
                 } else {
                     Ok(Self::Dragon)
                 }
             }
-            "z" => {
-                if ["1", "2", "3", "4"].contains(&value) {
+            Z_SUIT_CHAR => {
+                if [EAST_VALUE_Z, SOUTH_VALUE_Z, NORTH_VALUE_Z, WEST_VALUE_Z].contains(&value) {
                     Ok(Self::Wind)
-                } else if ["5", "6", "7"].contains(&value) {
+                } else if [RED_VALUE_Z, GREEN_VALUE_Z, WHITE_VALUE_Z].contains(&value) {
                     Ok(Self::Dragon)
                 } else {
                     Err(HandErr::InvalidGroup)
@@ -69,13 +87,15 @@ impl Suit {
 
 #[cfg(test)]
 mod test {
+    use crate::{AKAFIVE_VALUE, FOUR_VALUE, ONE_VALUE, WEST_VALUE};
+
     use super::*;
 
     #[test]
     fn souzu_suit_from_string() {
-        let suit = "s".to_string();
-        let value = "1".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let suit = SOU_SUIT_CHAR;
+        let value = ONE_VALUE;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Ok(Suit::Souzu);
 
         assert_eq!(actual, expected);
@@ -83,54 +103,54 @@ mod test {
 
     #[test]
     fn manzu_suit_from_string() {
-        let suit = "m".to_string();
-        let value = "1".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let suit = MAN_SUIT_CHAR;
+        let value = ONE_VALUE;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Ok(Suit::Manzu);
 
         assert_eq!(actual, expected);
     }
     #[test]
     fn pinzu_suit_from_string() {
-        let suit = "p".to_string();
-        let value = "1".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let suit = PIN_SUIT_CHAR;
+        let value = ONE_VALUE;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Ok(Suit::Pinzu);
 
         assert_eq!(actual, expected);
     }
     #[test]
     fn wind_suit_from_string() {
-        let suit = "z".to_string();
-        let value = "1".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let suit = Z_SUIT_CHAR;
+        let value = ONE_VALUE;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Ok(Suit::Wind);
 
         assert_eq!(actual, expected);
-        let suit = "z".to_string();
-        let value = "4".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let suit = Z_SUIT_CHAR;
+        let value = FOUR_VALUE;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Ok(Suit::Wind);
 
         assert_eq!(actual, expected);
-        let suit = "w".to_string();
-        let value = "W".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let suit = WIND_SUIT_CHAR;
+        let value = WEST_VALUE;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Ok(Suit::Wind);
 
         assert_eq!(actual, expected);
     }
     #[test]
     fn akadora_suit_from_string() {
-        let value = "0".to_string();
-        let suit = "m".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let value = AKAFIVE_VALUE;
+        let suit = MAN_SUIT_CHAR;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Ok(Suit::Manzu);
         assert_eq!(actual, expected);
 
-        let value = "0".to_string();
-        let suit = "z".to_string();
-        let actual = Suit::suit_from_string(&suit, &value);
+        let value = AKAFIVE_VALUE;
+        let suit = Z_SUIT_CHAR;
+        let actual = Suit::suit_from_string(suit, value);
         let expected = Err(HandErr::InvalidGroup);
         assert_eq!(actual, expected);
     }
