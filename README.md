@@ -1,14 +1,53 @@
 
-# Riichi Mahjong Calculator Via the Terminal
+# Riichi Mahjong Calculator
 CLI tool that calculates the score of a hand in riichi mahjong. <br>
 - Manual mode (Calculator Mode): given han and fu, calculates the score <br>
-- Normal mode: given a hand, calculates the score with included yaku and fu
+- Normal mode: given a hand, calculates the score with included yaku and fu <br>
+
+This also doubles as a scoring library! checkout out the <a href="https://docs.rs/mahc/latest/mahc/">docs on crates.io</a>
 
 ![demo gif](demo.gif)
 
 
 
 ## Examples
+### Library Usage
+```rust
+        // can get a tilegroup from a string
+        let one_two_three_seq: TileGroup = "123s".to_string().try_into().unwrap();
+        let seven_eight_nine_seq: TileGroup = "789m".to_string().try_into().unwrap();
+        let seven_par: TileGroup = "77m".to_string().try_into().unwrap();
+        let win_tile: Tile = "7m".to_string().try_into().unwrap();
+        // can create tiles using value const and suit enum 
+        let seat_wind: Tile = Tile::new(EAST_VALUE, &Suit::Wind).unwrap();
+        let prevelent_wind: Tile = "Ww".to_string().try_into().unwrap();
+
+        let out = Hand::new(
+            vec![
+                one_two_three_seq.clone(),
+                one_two_three_seq.clone(),
+                seven_eight_nine_seq.clone(),
+                seven_eight_nine_seq.clone(),
+                seven_par.clone(),
+            ],
+            win_tile,
+            seat_wind,
+            prevelent_wind,
+        )
+        .unwrap();
+        assert!(out.is_ryanpeikou());
+
+        // get list of yaku, fu 
+        let score = get_hand_score(hand, None, false, false, false, false, 
+                                    false, false, false, false, 0).unwrap();
+        assert_eq!(score.han(), 3);
+        assert_eq!(score.fu_score(), 40);
+
+        // get payment information 
+        let payment = calculate(score.han(), score.fu_score()).unwrap();
+        assert_eq!(payment.base_points(), 1280);
+        assert_eq!(payment.dealer_ron(score.honba()), 7700);
+```
 
 ### Calculator Mode
 ```bash
@@ -89,7 +128,8 @@ yields
             "tsumo":{"dealer":4000,"non-dealer":2000}
         }
     },
-    "yakuString":["Honitsu: 2","Ittsuu: 1","Yakuhai: 1"]}
+    "yakuString":["Honitsu: 2","Ittsuu: 1","Yakuhai: 1"]
+}
 ```
 and in ***calculator mode***
 ```bash
