@@ -1,6 +1,6 @@
 [package]
 name = "mahc"
-version = "1.8.5"
+version = "1.8.6"
 edition = "2021"
 authors =[  "Tharun <tharun1@hotmail.co.uk>" ]
 description = "cli riichi mahjong calculator, which spits out yaku and fu for a given hand"

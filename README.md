@@ -16,11 +16,15 @@ This also doubles as a scoring library! checkout out the <a href="https://docs.r
         // can get a tilegroup from a string
         let one_two_three_seq: TileGroup = "123s".to_string().try_into().unwrap();
         let seven_eight_nine_seq: TileGroup = "789m".to_string().try_into().unwrap();
-        let seven_par: TileGroup = "77m".to_string().try_into().unwrap();
+
+        // creating a tilegroup from tiles
+        let seven_tile: Tile = "7m".to_string().try_into().unwrap(); 
+        let seven_pair: TileGroup = TileGroup::new(vec![seven_tile.clone(), seven_tile.clone()], false).unwrap();
+
+        // can create tiles in a few ways 
         let win_tile: Tile = "7m".to_string().try_into().unwrap();
-        // can create tiles using value const and suit enum 
         let seat_wind: Tile = Tile::new(EAST_VALUE, &Suit::Wind).unwrap();
-        let prevelent_wind: Tile = "Ww".to_string().try_into().unwrap();
+        let prevelent_wind: Tile = Tile::Wind(Wind::West);
 
         let out = Hand::new(
             vec![
