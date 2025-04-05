@@ -126,9 +126,7 @@ impl Hand {
 
         if tsumo {
             fu_types.push(Fu::Tsumo);
-        }
-
-        if !self.is_open() {
+        } else if !self.is_open() {
             fu_types.push(Fu::ClosedRon);
         }
 
