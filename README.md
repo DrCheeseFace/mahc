@@ -13,6 +13,11 @@ This also doubles as a scoring library! checkout out the <a href="https://docs.r
 ## Examples
 ### Library Usage
 ```rust
+        use mahc::tile_group::TileGroup;
+        use mahc::tile::Tile;
+        use mahc::tile::Wind;
+        use mahc::hand::Hand;
+
         // can get a tilegroup from a string
         let one_two_three_seq: TileGroup = "123s".to_string().try_into().unwrap();
         let seven_eight_nine_seq: TileGroup = "789m".to_string().try_into().unwrap();
