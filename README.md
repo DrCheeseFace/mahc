@@ -32,7 +32,7 @@ This also doubles as a scoring library! checkout out the <a href="https://docs.r
                 one_two_three_seq.clone(),
                 seven_eight_nine_seq.clone(),
                 seven_eight_nine_seq.clone(),
-                seven_par.clone(),
+                seven_pair.clone(),
             ],
             win_tile,
             seat_wind,
