@@ -84,7 +84,34 @@ impl TryFrom<String> for TileGroup {
 }
 
 impl TileGroup {
-    fn new(tiles: Vec<Tile>, isopen: bool) -> Result<Self, HandErr> {
+    /// Creating a new tilegroup
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use mahc::tile_group::TileGroup;
+    /// use mahc::tile_group::GroupType;
+    /// use mahc::tile::Tile;
+    /// use mahc::hand::error::HandErr;
+    /// use mahc::tile::Man;
+    ///
+    /// let tile_7 = Tile::Man(Man::SevenMan);
+    /// let tile_8 = Tile::Man(Man::EightMan);
+    /// let tile_9 = Tile::Man(Man::NineMan);
+    /// let group = vec![tile_7.clone(), tile_8.clone(), tile_9.clone()];
+    ///
+    /// let tile_group = TileGroup::new(group, true).unwrap();
+    /// assert!(tile_group.is_terminal());
+    /// assert!(tile_group.isopen);
+    /// assert_eq!(tile_group.group_type, GroupType::Sequence);
+    ///
+    /// let group = vec![tile_7.clone(), tile_8.clone(), tile_8.clone()];
+    ///
+    /// let tile_group = TileGroup::new(group, true);
+    /// assert_eq!(tile_group.err(), Some(HandErr::InvalidGroup));
+    ///
+    /// ```
+    pub fn new(tiles: Vec<Tile>, isopen: bool) -> Result<Self, HandErr> {
         let group_type = match tiles.len() {
             1 => Ok(GroupType::None),
             2 => Ok(GroupType::Pair),
@@ -528,11 +555,11 @@ mod tests {
             "2z".to_string().try_into().unwrap(),
             "2z".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, true).unwrap();
-        assert!(tile.isopen);
-        assert_eq!(tile.group_type, GroupType::Triplet);
-        assert_eq!(tile.suit(), Suit::Wind);
-        assert_eq!(tile.value(), SOUTH_VALUE);
+        let tiles = TileGroup::new(group, true).unwrap();
+        assert!(tiles.isopen);
+        assert_eq!(tiles.group_type, GroupType::Triplet);
+        assert_eq!(tiles.suit(), Suit::Wind);
+        assert_eq!(tiles.value(), SOUTH_VALUE);
 
         let group = vec![
             "Ew".to_string().try_into().unwrap(),
@@ -540,32 +567,32 @@ mod tests {
             "Ew".to_string().try_into().unwrap(),
             "Ew".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert!(!tile.isopen);
-        assert_eq!(tile.group_type, GroupType::Kan);
-        assert_eq!(tile.suit(), Suit::Wind);
-        assert_eq!(tile.value(), EAST_VALUE);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert!(!tiles.isopen);
+        assert_eq!(tiles.group_type, GroupType::Kan);
+        assert_eq!(tiles.suit(), Suit::Wind);
+        assert_eq!(tiles.value(), EAST_VALUE);
     }
 
     #[test]
-    fn dragon_tilegroup() {
+    fn dragon_tilesgroup() {
         let group = vec!["5z".to_string().try_into().unwrap()];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.suit(), Suit::Dragon);
-        assert_eq!(tile.value(), WHITE_VALUE);
-        assert!(!tile.isopen);
-        assert_eq!(tile.group_type, GroupType::None);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.suit(), Suit::Dragon);
+        assert_eq!(tiles.value(), WHITE_VALUE);
+        assert!(!tiles.isopen);
+        assert_eq!(tiles.group_type, GroupType::None);
 
         let group = vec![
             "6z".to_string().try_into().unwrap(),
             "6z".to_string().try_into().unwrap(),
             "6z".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, true).unwrap();
-        assert_eq!(tile.suit(), Suit::Dragon);
-        assert_eq!(tile.value(), GREEN_VALUE);
-        assert!(tile.isopen);
-        assert_eq!(tile.group_type, GroupType::Triplet);
+        let tiles = TileGroup::new(group, true).unwrap();
+        assert_eq!(tiles.suit(), Suit::Dragon);
+        assert_eq!(tiles.value(), GREEN_VALUE);
+        assert!(tiles.isopen);
+        assert_eq!(tiles.group_type, GroupType::Triplet);
 
         let group = vec![
             "7z".to_string().try_into().unwrap(),
@@ -573,11 +600,11 @@ mod tests {
             "7z".to_string().try_into().unwrap(),
             "7z".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert!(!tile.isopen);
-        assert_eq!(tile.group_type, GroupType::Kan);
-        assert_eq!(tile.suit(), Suit::Dragon);
-        assert_eq!(tile.value(), RED_VALUE);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert!(!tiles.isopen);
+        assert_eq!(tiles.group_type, GroupType::Kan);
+        assert_eq!(tiles.suit(), Suit::Dragon);
+        assert_eq!(tiles.value(), RED_VALUE);
     }
 
     #[test]
@@ -589,50 +616,50 @@ mod tests {
             "1s".to_string().try_into().unwrap(),
             "1s".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile, Err(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles, Err(HandErr::InvalidGroup));
     }
 
     #[test]
     fn is_akadora() {
         let group = vec!["0m".to_string().try_into().unwrap()];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.value(), FIVE_VALUE);
-        assert_eq!(tile.tiles[0].is_aka(), true);
-        assert_eq!(tile.group_type, GroupType::None);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.value(), FIVE_VALUE);
+        assert_eq!(tiles.tiles[0].is_aka(), true);
+        assert_eq!(tiles.group_type, GroupType::None);
 
         let group = vec![
             "0s".to_string().try_into().unwrap(),
             "5s".to_string().try_into().unwrap(),
             "5s".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.value(), FIVE_VALUE);
-        assert_eq!(tile.tiles[0].is_aka(), true);
-        assert_eq!(tile.tiles[1].is_aka(), false);
-        assert_eq!(tile.tiles[2].is_aka(), false);
-        assert_eq!(tile.group_type, GroupType::Triplet);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.value(), FIVE_VALUE);
+        assert_eq!(tiles.tiles[0].is_aka(), true);
+        assert_eq!(tiles.tiles[1].is_aka(), false);
+        assert_eq!(tiles.tiles[2].is_aka(), false);
+        assert_eq!(tiles.group_type, GroupType::Triplet);
 
         let group = vec![
             "4s".to_string().try_into().unwrap(),
             "0s".to_string().try_into().unwrap(),
             "6s".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.value(), FOUR_VALUE);
-        assert_eq!(tile.tiles[0].is_aka(), false);
-        assert_eq!(tile.tiles[1].is_aka(), true);
-        assert_eq!(tile.tiles[2].is_aka(), false);
-        assert_eq!(tile.group_type, GroupType::Sequence);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.value(), FOUR_VALUE);
+        assert_eq!(tiles.tiles[0].is_aka(), false);
+        assert_eq!(tiles.tiles[1].is_aka(), true);
+        assert_eq!(tiles.tiles[2].is_aka(), false);
+        assert_eq!(tiles.group_type, GroupType::Sequence);
     }
 
     #[test]
     fn is_not_akadora() {
         let group = vec!["1m".to_string().try_into().unwrap()];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.value(), ONE_VALUE);
-        assert_eq!(tile.tiles[0].is_aka(), false);
-        assert_eq!(tile.group_type, GroupType::None);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.value(), ONE_VALUE);
+        assert_eq!(tiles.tiles[0].is_aka(), false);
+        assert_eq!(tiles.group_type, GroupType::None);
     }
 
     #[test]
@@ -641,22 +668,22 @@ mod tests {
             "1m".to_string().try_into().unwrap(),
             "2m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles.err(), Some(HandErr::InvalidGroup));
 
         let group = vec![
             "1m".to_string().try_into().unwrap(),
             "1m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Pair);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Pair);
 
         let group = vec![
             "0m".to_string().try_into().unwrap(),
             "5m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Pair);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Pair);
     }
 
     #[test]
@@ -666,32 +693,32 @@ mod tests {
             "1m".to_string().try_into().unwrap(),
             "2m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles.err(), Some(HandErr::InvalidGroup));
 
         let group = vec![
             "1m".to_string().try_into().unwrap(),
             "2m".to_string().try_into().unwrap(),
             "2m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles.err(), Some(HandErr::InvalidGroup));
 
         let group = vec![
             "1m".to_string().try_into().unwrap(),
             "1m".to_string().try_into().unwrap(),
             "1m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Triplet);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Triplet);
 
         let group = vec![
             "0m".to_string().try_into().unwrap(),
             "5m".to_string().try_into().unwrap(),
             "0m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Triplet);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Triplet);
     }
 
     #[test]
@@ -701,8 +728,8 @@ mod tests {
             "2m".to_string().try_into().unwrap(),
             "4m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles.err(), Some(HandErr::InvalidGroup));
 
         let group = vec![
             "1m".to_string().try_into().unwrap(),
@@ -710,24 +737,24 @@ mod tests {
             "3m".to_string().try_into().unwrap(),
             "4m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles.err(), Some(HandErr::InvalidGroup));
 
         let group = vec![
             "5m".to_string().try_into().unwrap(),
             "6m".to_string().try_into().unwrap(),
             "7m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Sequence);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Sequence);
 
         let group = vec![
             "4m".to_string().try_into().unwrap(),
             "0m".to_string().try_into().unwrap(),
             "6m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Sequence);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Sequence);
     }
 
     #[test]
@@ -738,8 +765,8 @@ mod tests {
             "1m".to_string().try_into().unwrap(),
             "2m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles.err(), Some(HandErr::InvalidGroup));
 
         let group = vec![
             "1m".to_string().try_into().unwrap(),
@@ -747,8 +774,8 @@ mod tests {
             "2m".to_string().try_into().unwrap(),
             "2m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false);
-        assert_eq!(tile.err(), Some(HandErr::InvalidGroup));
+        let tiles = TileGroup::new(group, false);
+        assert_eq!(tiles.err(), Some(HandErr::InvalidGroup));
 
         let group = vec![
             "2m".to_string().try_into().unwrap(),
@@ -756,8 +783,8 @@ mod tests {
             "2m".to_string().try_into().unwrap(),
             "2m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Kan);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Kan);
 
         let group = vec![
             "0m".to_string().try_into().unwrap(),
@@ -765,7 +792,7 @@ mod tests {
             "0m".to_string().try_into().unwrap(),
             "5m".to_string().try_into().unwrap(),
         ];
-        let tile = TileGroup::new(group, false).unwrap();
-        assert_eq!(tile.group_type, GroupType::Kan);
+        let tiles = TileGroup::new(group, false).unwrap();
+        assert_eq!(tiles.group_type, GroupType::Kan);
     }
 }
