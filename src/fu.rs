@@ -270,4 +270,33 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn fu_cal_tsu_closed() {
+        let out = Hand::new_from_strings(
+            vec![
+                "EEEw".to_string(),
+                "WWWw".to_string(),
+                "123p".to_string(),
+                "123s".to_string(),
+                "11m".to_string(),
+            ],
+            "1m".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual_fu = out.calculate_fu(true);
+        assert_eq!(calculate_total_fu_value(&actual_fu), 40);
+        assert_eq!(
+            actual_fu,
+            [
+                Fu::BasePoints,
+                Fu::Tsumo,
+                Fu::NonSimpleClosedTriplet,
+                Fu::NonSimpleClosedTriplet,
+                Fu::SingleWait,
+            ]
+        );
+    }
 }
