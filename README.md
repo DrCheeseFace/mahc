@@ -13,49 +13,49 @@ This also doubles as a scoring library! checkout out the <a href="https://docs.r
 ## Examples
 ### Library Usage
 ```rust
-        use mahc::tile_group::TileGroup;
-        use mahc::tile::Tile;
-        use mahc::tile::Wind;
-        use mahc::hand::Hand;
+use mahc::tile_group::TileGroup;
+use mahc::tile::Tile;
+use mahc::tile::Wind;
+use mahc::hand::Hand;
 
-        // can get a tilegroup from a string
-        let one_two_three_seq: TileGroup = "123s".to_string().try_into().unwrap();
-        let seven_eight_nine_seq: TileGroup = "789m".to_string().try_into().unwrap();
+// can get a tilegroup from a string
+let one_two_three_seq: TileGroup = "123s".to_string().try_into().unwrap();
+let seven_eight_nine_seq: TileGroup = "789m".to_string().try_into().unwrap();
 
-        // creating a tilegroup from tiles
-        let seven_tile: Tile = "7m".to_string().try_into().unwrap(); 
-        let seven_pair: TileGroup = TileGroup::new(vec![seven_tile.clone(), seven_tile.clone()], false).unwrap();
+// creating a tilegroup from tiles
+let seven_tile: Tile = "7m".to_string().try_into().unwrap(); 
+let seven_pair: TileGroup = TileGroup::new(vec![seven_tile.clone(), seven_tile.clone()], false).unwrap();
 
-        // can create tiles in a few ways 
-        let win_tile: Tile = "7m".to_string().try_into().unwrap();
-        let seat_wind: Tile = Tile::new(EAST_VALUE, &Suit::Wind).unwrap();
-        let prevelent_wind: Tile = Tile::Wind(Wind::West);
+// can create tiles in a few ways 
+let win_tile: Tile = "7m".to_string().try_into().unwrap();
+let seat_wind: Tile = Tile::new(EAST_VALUE, &Suit::Wind).unwrap();
+let prevelent_wind: Tile = Tile::Wind(Wind::West);
 
-        let out = Hand::new(
-            vec![
-                one_two_three_seq.clone(),
-                one_two_three_seq.clone(),
-                seven_eight_nine_seq.clone(),
-                seven_eight_nine_seq.clone(),
-                seven_pair.clone(),
-            ],
-            win_tile,
-            seat_wind,
-            prevelent_wind,
-        )
-        .unwrap();
-        assert!(out.is_ryanpeikou());
+let out = Hand::new(
+    vec![
+        one_two_three_seq.clone(),
+        one_two_three_seq.clone(),
+        seven_eight_nine_seq.clone(),
+        seven_eight_nine_seq.clone(),
+        seven_pair.clone(),
+    ],
+    win_tile,
+    seat_wind,
+    prevelent_wind,
+)
+.unwrap();
+assert!(out.is_ryanpeikou());
 
-        // get list of yaku, fu 
-        let score = get_hand_score(hand, None, false, false, false, false, 
-                                    false, false, false, false, 0).unwrap();
-        assert_eq!(score.han(), 3);
-        assert_eq!(score.fu_score(), 40);
+// get list of yaku, fu 
+let score = get_hand_score(hand, None, false, false, false, false, 
+                            false, false, false, false, 0).unwrap();
+assert_eq!(score.han(), 3);
+assert_eq!(score.fu_score(), 40);
 
-        // get payment information 
-        let payment = calculate(score.han(), score.fu_score()).unwrap();
-        assert_eq!(payment.base_points(), 1280);
-        assert_eq!(payment.dealer_ron(score.honba()), 7700);
+// get payment information 
+let payment = calculate(score.han(), score.fu_score()).unwrap();
+assert_eq!(payment.base_points(), 1280);
+assert_eq!(payment.dealer_ron(score.honba()), 7700);
 ```
 
 ### Calculator Mode
