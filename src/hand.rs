@@ -17,6 +17,17 @@ pub struct Hand {
     isopen: bool,
 }
 
+impl std::fmt::Display for Hand {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut out = String::new();
+        for group in self.groups.iter() {
+            out.push_str(&group.to_string());
+            out.push(' ');
+        }
+        write!(f, "{}", out)
+    }
+}
+
 impl Hand {
     pub fn new(
         groups: Vec<TileGroup>,
@@ -253,7 +264,7 @@ impl Hand {
         if dora_indicator_tiles.is_none() {
             return count;
         }
-        for tile in dora_indicator_tiles.unwrap() {
+        for tile in dora_indicator_tiles.clone().unwrap() {
             let dora_tile = tile.clone().next().unwrap();
             for triplet in self.triplets() {
                 if triplet.tiles[0] == dora_tile {
@@ -948,6 +959,18 @@ impl Hand {
             return true;
         }
         false
+    }
+
+    pub fn get_emoji(&self) -> String {
+        let mut out = String::new();
+        for group in self.groups.iter() {
+            out.push_str(&group.get_emoji());
+            out.push(' ');
+        }
+        out.push_str("  ");
+        out.push_str(self.win_tile.get_emoji());
+        out.push_str(" w");
+        out
     }
 }
 

@@ -26,8 +26,8 @@ impl std::fmt::Display for CalculatorErrors {
 
 /// Get the score breakdown of the hand.
 pub fn get_hand_score(
-    hand: Hand,
-    dora: Option<Vec<Tile>>,
+    hand: &Hand,
+    dora: &Option<Vec<Tile>>,
     tsumo: bool,
     riichi: bool,
     doubleriichi: bool,
@@ -43,7 +43,7 @@ pub fn get_hand_score(
     }
 
     let yaku = get_yaku_han(
-        &hand,
+        hand,
         riichi,
         doubleriichi,
         ippatsu,
@@ -75,7 +75,7 @@ pub fn get_hand_score(
     };
 
     // get han from dora tiles
-    let dora_count = hand.get_dora_count(dora);
+    let dora_count = hand.get_dora_count(dora.clone());
 
     let han = yaku.0 + dora_count;
     let fu_value = calculate_total_fu_value(&fu);
@@ -91,7 +91,7 @@ pub fn get_hand_score(
         calculate_yakuman(&yaku.1)?
     } else {
         //can unwrap here because check for yaku earlier
-        calculate(han, fu_value).unwrap()
+        calculate(&han, &fu_value).unwrap()
     };
     let score = Score::new(
         payment,
@@ -213,23 +213,23 @@ pub fn calculate_yakuman(yaku: &Vec<Yaku>) -> Result<Payment, HandErr> {
 }
 
 /// Calculate the payment amounts from the han, fu, and number of honba (repeat counters).
-pub fn calculate(han: HanValue, fu: FuValue) -> Result<Payment, HandErr> {
-    if han == 0 {
+pub fn calculate(han: &HanValue, fu: &FuValue) -> Result<Payment, HandErr> {
+    if *han == 0 {
         return Err(HandErr::NoHan);
     }
 
-    if fu == 0 {
+    if *fu == 0 {
         return Err(HandErr::NoFu);
     }
 
-    let k = LimitHands::get_limit_hand(han, fu);
+    let k = LimitHands::get_limit_hand(*han, *fu);
     if let Some(limithand) = k {
         let payment = limithand.get_score();
 
         return Ok(payment);
     }
 
-    let payment = Payment::from_han_and_fu(han, fu);
+    let payment = Payment::from_han_and_fu(*han, *fu);
 
     Ok(payment)
 }
