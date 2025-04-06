@@ -20,19 +20,19 @@ pub struct Args {
     tiles: Option<Vec<String>>,
 
     /// Winning tile
-    #[arg(short, long)]
+    #[arg(short, long, name = "WIN_TILE")]
     win: Option<String>,
 
     /// Dora indicator tiles
-    #[arg(short, long, value_delimiter = ' ', num_args = 1..)]
+    #[arg(short, long, value_delimiter = ' ', num_args = 1.., name = "DORA_TILE")]
     dora: Option<Vec<String>>,
 
     /// seat wind
-    #[arg(short, long, default_value = "Ew")]
+    #[arg(short, long, default_value = "Ew", name = "SEAT_TILE")]
     seat: String,
 
     /// prevelant wind
-    #[arg(short, long, default_value = "Ew")]
+    #[arg(short, long, default_value = "Ew", name = "PREVELANT_TILE")]
     prev: String,
 
     /// is tsumo
@@ -72,11 +72,11 @@ pub struct Args {
     ba: HonbaCounter,
 
     /// calculator mode
-    #[arg(short, long, default_value = None, value_delimiter = ' ', num_args = 2)]
+    #[arg(short, long, default_value = None, value_delimiter = ' ', num_args = 2,  value_names = &["Han", "Fu"])]
     manual: Option<Vec<u32>>,
 
     /// file input
-    #[arg(short, long, default_value = None)]
+    #[arg(short, long, default_value = None, name = "filename")]
     file: Option<String>,
 
     /// stdout as json
@@ -86,13 +86,20 @@ pub struct Args {
     /// file output
     #[arg(short, default_value = "mahc.txt")]
     output: Option<String>,
+
+    /// tile emoji printout
+    /// (only applies to non-calculator and non-json
+    /// output and may only work if emojis are supported
+    /// on your terminal emulator)
+    #[arg(long, default_value_t = false)]
+    emoji: bool,
 }
 
 pub fn parse_calculator(args: &Args) -> Result<String, HandErr> {
     let honba = args.ba;
-    let han = args.manual.as_ref().unwrap()[0];
-    let fu = args.manual.as_ref().unwrap()[1].into();
-    let payment = calc::calculate(han, fu)?;
+    let han: HanValue = args.manual.as_ref().unwrap()[0];
+    let fu: FuValue = args.manual.as_ref().unwrap()[1].into();
+    let payment = calc::calculate(&han, &fu)?;
 
     if args.json {
         Ok(json_calc_out(&payment, honba, han, fu))
@@ -142,8 +149,8 @@ pub fn parse_hand(args: &Args) -> Result<String, HandErr> {
             .collect()
     });
     let score = calc::get_hand_score(
-        hand,
-        doras,
+        &hand,
+        &doras,
         args.tsumo,
         args.riichi,
         args.doubleriichi,
@@ -160,7 +167,7 @@ pub fn parse_hand(args: &Args) -> Result<String, HandErr> {
     let printout = if args.json {
         json_hand_out(&score)
     } else {
-        default_hand_out(&score)
+        default_hand_out(&score, &hand, args.emoji)
     };
     Ok(printout)
 }
@@ -240,8 +247,15 @@ pub fn json_hand_out(score: &Score) -> String {
     });
     out.to_string()
 }
-pub fn default_hand_out(score: &Score) -> String {
+pub fn default_hand_out(score: &Score, hand: &Hand, emoji_out: bool) -> String {
     let mut out: String = String::new();
+    out.push('\n');
+    if emoji_out {
+        out.push_str(&hand.get_emoji());
+    } else {
+        out.push_str(&hand.to_string());
+    }
+    out.push('\n');
     if !score.yaku()[0].is_yakuman() {
         if score.honba() != 0 {
             out.push_str(

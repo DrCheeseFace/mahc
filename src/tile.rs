@@ -1,8 +1,9 @@
 use crate::{
-    hand::error::HandErr, suit::Suit, AKAFIVE_VALUE, EAST_VALUE, EAST_VALUE_Z, EIGHT_VALUE,
-    FIVE_VALUE, FOUR_VALUE, GREEN_VALUE, GREEN_VALUE_Z, NINE_VALUE, NORTH_VALUE, NORTH_VALUE_Z,
-    ONE_VALUE, RED_VALUE, RED_VALUE_Z, SEVEN_VALUE, SIX_VALUE, SOUTH_VALUE, SOUTH_VALUE_Z,
-    THREE_VALUE, TWO_VALUE, WEST_VALUE, WEST_VALUE_Z, WHITE_VALUE, WHITE_VALUE_Z,
+    hand::error::HandErr, suit::Suit, AKAFIVE_VALUE, DRAGON_SUIT_CHAR, EAST_VALUE, EAST_VALUE_Z,
+    EIGHT_VALUE, FIVE_VALUE, FOUR_VALUE, GREEN_VALUE, GREEN_VALUE_Z, MAN_SUIT_CHAR, NINE_VALUE,
+    NORTH_VALUE, NORTH_VALUE_Z, ONE_VALUE, PIN_SUIT_CHAR, RED_VALUE, RED_VALUE_Z, SEVEN_VALUE,
+    SIX_VALUE, SOUTH_VALUE, SOUTH_VALUE_Z, SOU_SUIT_CHAR, THREE_VALUE, TWO_VALUE, WEST_VALUE,
+    WEST_VALUE_Z, WHITE_VALUE, WHITE_VALUE_Z, WIND_SUIT_CHAR,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
@@ -83,6 +84,60 @@ impl TryFrom<String> for Tile {
 
         let suit = Suit::suit_from_string(suit_char, value_char)?;
         Tile::new(value_char, &suit)
+    }
+}
+
+impl std::fmt::Display for Tile {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Tile::Man(t) => match t {
+                Man::OneMan => write!(f, "{}{}", ONE_VALUE, MAN_SUIT_CHAR),
+                Man::TwoMan => write!(f, "{}{}", TWO_VALUE, MAN_SUIT_CHAR),
+                Man::ThreeMan => write!(f, "{}{}", THREE_VALUE, MAN_SUIT_CHAR),
+                Man::FourMan => write!(f, "{}{}", FOUR_VALUE, MAN_SUIT_CHAR),
+                Man::FiveMan => write!(f, "{}{}", FIVE_VALUE, MAN_SUIT_CHAR),
+                Man::AkaFiveMan => write!(f, "{}{}", AKAFIVE_VALUE, MAN_SUIT_CHAR), //MMMMMM choices choic,
+                Man::SixMan => write!(f, "{}{}", SIX_VALUE, MAN_SUIT_CHAR),
+                Man::SevenMan => write!(f, "{}{}", SEVEN_VALUE, MAN_SUIT_CHAR),
+                Man::EightMan => write!(f, "{}{}", EIGHT_VALUE, MAN_SUIT_CHAR),
+                Man::NineMan => write!(f, "{}{}", NINE_VALUE, MAN_SUIT_CHAR),
+            },
+            Tile::Pin(t) => match t {
+                Pin::OnePin => write!(f, "{}{}", ONE_VALUE, PIN_SUIT_CHAR),
+                Pin::TwoPin => write!(f, "{}{}", TWO_VALUE, PIN_SUIT_CHAR),
+                Pin::ThreePin => write!(f, "{}{}", THREE_VALUE, PIN_SUIT_CHAR),
+                Pin::FourPin => write!(f, "{}{}", FOUR_VALUE, PIN_SUIT_CHAR),
+                Pin::FivePin => write!(f, "{}{}", FIVE_VALUE, PIN_SUIT_CHAR),
+                Pin::AkaFivePin => write!(f, "{}{}", AKAFIVE_VALUE, PIN_SUIT_CHAR), //MMMMMM choices choic,
+                Pin::SixPin => write!(f, "{}{}", SIX_VALUE, PIN_SUIT_CHAR),
+                Pin::SevenPin => write!(f, "{}{}", SEVEN_VALUE, PIN_SUIT_CHAR),
+                Pin::EightPin => write!(f, "{}{}", EIGHT_VALUE, PIN_SUIT_CHAR),
+                Pin::NinePin => write!(f, "{}{}", NINE_VALUE, PIN_SUIT_CHAR),
+            },
+            Tile::Sou(t) => match t {
+                Sou::OneSou => write!(f, "{}{}", ONE_VALUE, SOU_SUIT_CHAR),
+                Sou::TwoSou => write!(f, "{}{}", TWO_VALUE, SOU_SUIT_CHAR),
+                Sou::ThreeSou => write!(f, "{}{}", THREE_VALUE, SOU_SUIT_CHAR),
+                Sou::FourSou => write!(f, "{}{}", FOUR_VALUE, SOU_SUIT_CHAR),
+                Sou::FiveSou => write!(f, "{}{}", FIVE_VALUE, SOU_SUIT_CHAR),
+                Sou::AkaFiveSou => write!(f, "{}{}", AKAFIVE_VALUE, SOU_SUIT_CHAR), //MMMMMM choices choic,
+                Sou::SixSou => write!(f, "{}{}", SIX_VALUE, SOU_SUIT_CHAR),
+                Sou::SevenSou => write!(f, "{}{}", SEVEN_VALUE, SOU_SUIT_CHAR),
+                Sou::EightSou => write!(f, "{}{}", EIGHT_VALUE, SOU_SUIT_CHAR),
+                Sou::NineSou => write!(f, "{}{}", NINE_VALUE, SOU_SUIT_CHAR),
+            },
+            Tile::Wind(t) => match t {
+                Wind::East => write!(f, "{}{}", EAST_VALUE, WIND_SUIT_CHAR),
+                Wind::South => write!(f, "{}{}", SOUTH_VALUE, WIND_SUIT_CHAR),
+                Wind::West => write!(f, "{}{}", WEST_VALUE, WIND_SUIT_CHAR),
+                Wind::North => write!(f, "{}{}", NORTH_VALUE, WIND_SUIT_CHAR),
+            },
+            Tile::Dragon(t) => match t {
+                Dragon::Red => write!(f, "{}{}", RED_VALUE, DRAGON_SUIT_CHAR),
+                Dragon::Green => write!(f, "{}{}", GREEN_VALUE, DRAGON_SUIT_CHAR),
+                Dragon::White => write!(f, "{}{}", WHITE_VALUE, DRAGON_SUIT_CHAR),
+            },
+        }
     }
 }
 
@@ -364,6 +419,58 @@ impl Tile {
     /// Parse the group value into an integer.
     pub fn parse_u8(&self) -> Result<u8, std::num::ParseIntError> {
         self.value().to_string().parse()
+    }
+
+    pub fn get_emoji(&self) -> &str {
+        match self {
+            Tile::Man(t) => match t {
+                Man::OneMan => "🀇",
+                Man::TwoMan => "🀈",
+                Man::ThreeMan => "🀉",
+                Man::FourMan => "🀊",
+                Man::FiveMan => "🀋",
+                Man::AkaFiveMan => "🀋", //MMMMMM choices choices
+                Man::SixMan => "🀌",
+                Man::SevenMan => "🀍",
+                Man::EightMan => "🀎",
+                Man::NineMan => "🀏",
+            },
+            Tile::Pin(t) => match t {
+                Pin::OnePin => "🀙",
+                Pin::TwoPin => "🀚",
+                Pin::ThreePin => "🀛",
+                Pin::FourPin => "🀜",
+                Pin::FivePin => "🀝",
+                Pin::AkaFivePin => "🀝",
+                Pin::SixPin => "🀞",
+                Pin::SevenPin => "🀟",
+                Pin::EightPin => "🀠",
+                Pin::NinePin => "🀡",
+            },
+            Tile::Sou(t) => match t {
+                Sou::OneSou => "🀐",
+                Sou::TwoSou => "🀑",
+                Sou::ThreeSou => "🀒",
+                Sou::FourSou => "🀓",
+                Sou::FiveSou => "🀔",
+                Sou::AkaFiveSou => "🀔",
+                Sou::SixSou => "🀕",
+                Sou::SevenSou => "🀖",
+                Sou::EightSou => "🀗",
+                Sou::NineSou => "🀘",
+            },
+            Tile::Wind(t) => match t {
+                Wind::East => "🀀",
+                Wind::South => "🀁",
+                Wind::West => "🀂",
+                Wind::North => "🀃",
+            },
+            Tile::Dragon(t) => match t {
+                Dragon::Red => "🀄",
+                Dragon::Green => "🀅",
+                Dragon::White => "🀆",
+            },
+        }
     }
 }
 

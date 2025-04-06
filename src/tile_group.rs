@@ -1,6 +1,6 @@
 use crate::hand::error::HandErr;
 use crate::suit::Suit;
-use crate::tile::Tile;
+use crate::tile::{Dragon, Tile};
 use crate::{
     AKAFIVE_VALUE, EAST_VALUE, EAST_VALUE_Z, EIGHT_VALUE, FIVE_VALUE, FOUR_VALUE, GREEN_VALUE,
     GREEN_VALUE_Z, NINE_VALUE, NORTH_VALUE, NORTH_VALUE_Z, ONE_VALUE, OPEN_CHAR, RED_VALUE,
@@ -13,6 +13,19 @@ pub struct TileGroup {
     pub tiles: Vec<Tile>,
     pub isopen: bool,
     pub group_type: GroupType,
+}
+impl std::fmt::Display for TileGroup {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut out = String::new();
+        for tile in self.tiles.iter() {
+            out.push(tile.value())
+        }
+        out.push_str(&self.suit().to_string());
+        if self.isopen {
+            out.push('o');
+        }
+        write!(f, "{}", out)
+    }
 }
 
 impl TryFrom<String> for TileGroup {
@@ -191,6 +204,28 @@ impl TileGroup {
     /// Get Suit
     pub fn suit(&self) -> Suit {
         self.tiles[0].suit().clone()
+    }
+
+    pub fn get_emoji(&self) -> String {
+        let mut out: String = String::new();
+        let mut has_aka: bool = false;
+        for tile in self.tiles.iter() {
+            out.push_str(tile.get_emoji());
+            // for some reason, the red dragon emoji is different and doesnt need a space added
+            if *tile != Tile::Dragon(Dragon::Red) {
+                out.push(' ');
+            }
+            if tile.is_aka() {
+                has_aka = true;
+            }
+        }
+        if self.isopen {
+            out.push('o');
+        }
+        if has_aka {
+            out.push('a');
+        }
+        out
     }
 }
 
