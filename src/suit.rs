@@ -1,10 +1,4 @@
-use crate::{
-    hand::error::HandErr, AKAFIVE_VALUE, DRAGON_SUIT_CHAR, EAST_VALUE, EAST_VALUE_Z, EIGHT_VALUE,
-    FIVE_VALUE, FOUR_VALUE, GREEN_VALUE, GREEN_VALUE_Z, MAN_SUIT_CHAR, NINE_VALUE, NORTH_VALUE,
-    NORTH_VALUE_Z, ONE_VALUE, PIN_SUIT_CHAR, RED_VALUE, RED_VALUE_Z, SEVEN_VALUE, SIX_VALUE,
-    SOUTH_VALUE, SOUTH_VALUE_Z, SOU_SUIT_CHAR, THREE_VALUE, TWO_VALUE, WEST_VALUE, WEST_VALUE_Z,
-    WHITE_VALUE, WHITE_VALUE_Z, WIND_SUIT_CHAR, Z_SUIT_CHAR,
-};
+use crate::{hand::error::HandErr, tile::*};
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
 pub enum Suit {
@@ -97,10 +91,16 @@ impl Suit {
     }
 }
 
+pub const MAN_SUIT_CHAR: char = 'm';
+pub const PIN_SUIT_CHAR: char = 'p';
+pub const SOU_SUIT_CHAR: char = 's';
+
+pub const DRAGON_SUIT_CHAR: char = 'd';
+pub const WIND_SUIT_CHAR: char = 'w';
+pub const Z_SUIT_CHAR: char = 'z';
+
 #[cfg(test)]
 mod test {
-    use crate::{AKAFIVE_VALUE, FOUR_VALUE, ONE_VALUE, WEST_VALUE};
-
     use super::*;
 
     #[test]

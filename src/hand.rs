@@ -2,9 +2,8 @@ pub mod error;
 
 use crate::fu::Fu;
 use crate::suit::Suit;
-use crate::tile::{Dragon, Man, Pin, Sou, Tile, Wind};
+use crate::tile::*;
 use crate::tile_group::{GroupType, TileGroup};
-use crate::{NINE_VALUE, ONE_VALUE};
 use error::HandErr;
 
 #[derive(Debug)]
@@ -2610,9 +2609,8 @@ mod tests {
 mod tile_group_tests {
     use super::Hand;
     use crate::suit::Suit;
-    use crate::tile::Tile;
+    use crate::tile::*;
     use crate::tile_group::GroupType;
-    use crate::{EAST_VALUE, ONE_VALUE, RED_VALUE, SEVEN_VALUE, SOUTH_VALUE, TWO_VALUE};
 
     #[test]
     fn identify_pair() {

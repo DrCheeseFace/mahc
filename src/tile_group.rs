@@ -1,12 +1,6 @@
 use crate::hand::error::HandErr;
-use crate::suit::Suit;
-use crate::tile::Tile;
-use crate::{
-    AKAFIVE_VALUE, EAST_VALUE, EAST_VALUE_Z, EIGHT_VALUE, FIVE_VALUE, FOUR_VALUE, GREEN_VALUE,
-    GREEN_VALUE_Z, NINE_VALUE, NORTH_VALUE, NORTH_VALUE_Z, ONE_VALUE, OPEN_CHAR, RED_VALUE,
-    RED_VALUE_Z, SEVEN_VALUE, SIX_VALUE, SOUTH_VALUE, SOUTH_VALUE_Z, THREE_VALUE, TWO_VALUE,
-    VALID_SEQUENCE_VALUES, WEST_VALUE, WEST_VALUE_Z, WHITE_VALUE, WHITE_VALUE_Z, Z_SUIT_CHAR,
-};
+use crate::suit::{Suit, Z_SUIT_CHAR};
+use crate::{tile::*, VALID_SEQUENCE_VALUES};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TileGroup {
@@ -14,6 +8,7 @@ pub struct TileGroup {
     pub isopen: bool,
     pub group_type: GroupType,
 }
+
 impl std::fmt::Display for TileGroup {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut out = String::new();
@@ -347,10 +342,10 @@ impl GroupType {
     }
 }
 
+pub const OPEN_CHAR: char = 'o';
+
 #[cfg(test)]
 mod tests {
-    use crate::{FOUR_VALUE, ONE_VALUE};
-
     use super::*;
 
     #[test]

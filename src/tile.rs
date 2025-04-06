@@ -1,10 +1,5 @@
-use crate::{
-    hand::error::HandErr, suit::Suit, AKAFIVE_VALUE, DRAGON_SUIT_CHAR, EAST_VALUE, EAST_VALUE_Z,
-    EIGHT_VALUE, FIVE_VALUE, FOUR_VALUE, GREEN_VALUE, GREEN_VALUE_Z, MAN_SUIT_CHAR, NINE_VALUE,
-    NORTH_VALUE, NORTH_VALUE_Z, ONE_VALUE, PIN_SUIT_CHAR, RED_VALUE, RED_VALUE_Z, SEVEN_VALUE,
-    SIX_VALUE, SOUTH_VALUE, SOUTH_VALUE_Z, SOU_SUIT_CHAR, THREE_VALUE, TWO_VALUE, WEST_VALUE,
-    WEST_VALUE_Z, WHITE_VALUE, WHITE_VALUE_Z, WIND_SUIT_CHAR,
-};
+use crate::suit::*;
+use crate::{hand::error::HandErr, suit::Suit};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Tile {
@@ -474,13 +469,37 @@ impl Tile {
     }
 }
 
+pub const EAST_VALUE: char = 'E';
+pub const SOUTH_VALUE: char = 'S';
+pub const WEST_VALUE: char = 'W';
+pub const NORTH_VALUE: char = 'N';
+
+pub const EAST_VALUE_Z: char = '1';
+pub const SOUTH_VALUE_Z: char = '2';
+pub const WEST_VALUE_Z: char = '3';
+pub const NORTH_VALUE_Z: char = '4';
+
+pub const RED_VALUE: char = 'r';
+pub const GREEN_VALUE: char = 'g';
+pub const WHITE_VALUE: char = 'w';
+
+pub const RED_VALUE_Z: char = '7';
+pub const GREEN_VALUE_Z: char = '6';
+pub const WHITE_VALUE_Z: char = '5';
+
+pub const ONE_VALUE: char = '1';
+pub const TWO_VALUE: char = '2';
+pub const THREE_VALUE: char = '3';
+pub const FOUR_VALUE: char = '4';
+pub const FIVE_VALUE: char = '5';
+pub const AKAFIVE_VALUE: char = '0';
+pub const SIX_VALUE: char = '6';
+pub const SEVEN_VALUE: char = '7';
+pub const EIGHT_VALUE: char = '8';
+pub const NINE_VALUE: char = '9';
+
 #[cfg(test)]
 mod tests {
-    use crate::{
-        AKAFIVE_VALUE, EAST_VALUE, EIGHT_VALUE, FIVE_VALUE, FOUR_VALUE, GREEN_VALUE, NINE_VALUE,
-        NORTH_VALUE, ONE_VALUE, RED_VALUE, SEVEN_VALUE, SIX_VALUE, SOUTH_VALUE, THREE_VALUE,
-        TWO_VALUE, WEST_VALUE, WHITE_VALUE,
-    };
 
     use super::*;
     #[test]
