@@ -385,8 +385,6 @@ impl Tile {
 
     /// Parse the group value into an integer.
     pub fn parse_u8(&self) -> Result<u8, HandErr> {
-        // self.value().to_string().parse();
-
         match self {
             Tile::Man(t) | Tile::Pin(t) | Tile::Sou(t) => match t {
                 MpsValue::One => Ok(1),
