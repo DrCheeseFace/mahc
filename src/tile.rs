@@ -3,57 +3,29 @@ use crate::{hand::error::HandErr, suit::Suit};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Tile {
-    Man(Man),
-    Pin(Pin),
-    Sou(Sou),
-    Wind(Wind),
-    Dragon(Dragon),
+    Man(MpsValue),
+    Pin(MpsValue),
+    Sou(MpsValue),
+    Wind(WValue),
+    Dragon(DValue),
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Man {
-    OneMan,
-    TwoMan,
-    ThreeMan,
-    FourMan,
-    FiveMan,
-    AkaFiveMan,
-    SixMan,
-    SevenMan,
-    EightMan,
-    NineMan,
+pub enum MpsValue {
+    One,
+    Two,
+    Three,
+    Four,
+    Five,
+    AkaFive,
+    Six,
+    Seven,
+    Eight,
+    Nine,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Pin {
-    OnePin,
-    TwoPin,
-    ThreePin,
-    FourPin,
-    FivePin,
-    AkaFivePin,
-    SixPin,
-    SevenPin,
-    EightPin,
-    NinePin,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Sou {
-    OneSou,
-    TwoSou,
-    ThreeSou,
-    FourSou,
-    FiveSou,
-    AkaFiveSou,
-    SixSou,
-    SevenSou,
-    EightSou,
-    NineSou,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Wind {
+pub enum WValue {
     East,
     South,
     West,
@@ -61,7 +33,7 @@ pub enum Wind {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
-pub enum Dragon {
+pub enum DValue {
     Red,
     Green,
     White,
@@ -86,51 +58,51 @@ impl std::fmt::Display for Tile {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Tile::Man(t) => match t {
-                Man::OneMan => write!(f, "{}{}", ONE_VALUE, MAN_SUIT_CHAR),
-                Man::TwoMan => write!(f, "{}{}", TWO_VALUE, MAN_SUIT_CHAR),
-                Man::ThreeMan => write!(f, "{}{}", THREE_VALUE, MAN_SUIT_CHAR),
-                Man::FourMan => write!(f, "{}{}", FOUR_VALUE, MAN_SUIT_CHAR),
-                Man::FiveMan => write!(f, "{}{}", FIVE_VALUE, MAN_SUIT_CHAR),
-                Man::AkaFiveMan => write!(f, "{}{}", AKAFIVE_VALUE, MAN_SUIT_CHAR), //MMMMMM choices choic,
-                Man::SixMan => write!(f, "{}{}", SIX_VALUE, MAN_SUIT_CHAR),
-                Man::SevenMan => write!(f, "{}{}", SEVEN_VALUE, MAN_SUIT_CHAR),
-                Man::EightMan => write!(f, "{}{}", EIGHT_VALUE, MAN_SUIT_CHAR),
-                Man::NineMan => write!(f, "{}{}", NINE_VALUE, MAN_SUIT_CHAR),
+                MpsValue::One => write!(f, "{}{}", ONE_VALUE, MAN_SUIT_CHAR),
+                MpsValue::Two => write!(f, "{}{}", TWO_VALUE, MAN_SUIT_CHAR),
+                MpsValue::Three => write!(f, "{}{}", THREE_VALUE, MAN_SUIT_CHAR),
+                MpsValue::Four => write!(f, "{}{}", FOUR_VALUE, MAN_SUIT_CHAR),
+                MpsValue::Five => write!(f, "{}{}", FIVE_VALUE, MAN_SUIT_CHAR),
+                MpsValue::AkaFive => write!(f, "{}{}", AKAFIVE_VALUE, MAN_SUIT_CHAR), //MMMMMM choices choic,
+                MpsValue::Six => write!(f, "{}{}", SIX_VALUE, MAN_SUIT_CHAR),
+                MpsValue::Seven => write!(f, "{}{}", SEVEN_VALUE, MAN_SUIT_CHAR),
+                MpsValue::Eight => write!(f, "{}{}", EIGHT_VALUE, MAN_SUIT_CHAR),
+                MpsValue::Nine => write!(f, "{}{}", NINE_VALUE, MAN_SUIT_CHAR),
             },
             Tile::Pin(t) => match t {
-                Pin::OnePin => write!(f, "{}{}", ONE_VALUE, PIN_SUIT_CHAR),
-                Pin::TwoPin => write!(f, "{}{}", TWO_VALUE, PIN_SUIT_CHAR),
-                Pin::ThreePin => write!(f, "{}{}", THREE_VALUE, PIN_SUIT_CHAR),
-                Pin::FourPin => write!(f, "{}{}", FOUR_VALUE, PIN_SUIT_CHAR),
-                Pin::FivePin => write!(f, "{}{}", FIVE_VALUE, PIN_SUIT_CHAR),
-                Pin::AkaFivePin => write!(f, "{}{}", AKAFIVE_VALUE, PIN_SUIT_CHAR), //MMMMMM choices choic,
-                Pin::SixPin => write!(f, "{}{}", SIX_VALUE, PIN_SUIT_CHAR),
-                Pin::SevenPin => write!(f, "{}{}", SEVEN_VALUE, PIN_SUIT_CHAR),
-                Pin::EightPin => write!(f, "{}{}", EIGHT_VALUE, PIN_SUIT_CHAR),
-                Pin::NinePin => write!(f, "{}{}", NINE_VALUE, PIN_SUIT_CHAR),
+                MpsValue::One => write!(f, "{}{}", ONE_VALUE, PIN_SUIT_CHAR),
+                MpsValue::Two => write!(f, "{}{}", TWO_VALUE, PIN_SUIT_CHAR),
+                MpsValue::Three => write!(f, "{}{}", THREE_VALUE, PIN_SUIT_CHAR),
+                MpsValue::Four => write!(f, "{}{}", FOUR_VALUE, PIN_SUIT_CHAR),
+                MpsValue::Five => write!(f, "{}{}", FIVE_VALUE, PIN_SUIT_CHAR),
+                MpsValue::AkaFive => write!(f, "{}{}", AKAFIVE_VALUE, PIN_SUIT_CHAR), //MMMMMM choices choic,
+                MpsValue::Six => write!(f, "{}{}", SIX_VALUE, PIN_SUIT_CHAR),
+                MpsValue::Seven => write!(f, "{}{}", SEVEN_VALUE, PIN_SUIT_CHAR),
+                MpsValue::Eight => write!(f, "{}{}", EIGHT_VALUE, PIN_SUIT_CHAR),
+                MpsValue::Nine => write!(f, "{}{}", NINE_VALUE, PIN_SUIT_CHAR),
             },
             Tile::Sou(t) => match t {
-                Sou::OneSou => write!(f, "{}{}", ONE_VALUE, SOU_SUIT_CHAR),
-                Sou::TwoSou => write!(f, "{}{}", TWO_VALUE, SOU_SUIT_CHAR),
-                Sou::ThreeSou => write!(f, "{}{}", THREE_VALUE, SOU_SUIT_CHAR),
-                Sou::FourSou => write!(f, "{}{}", FOUR_VALUE, SOU_SUIT_CHAR),
-                Sou::FiveSou => write!(f, "{}{}", FIVE_VALUE, SOU_SUIT_CHAR),
-                Sou::AkaFiveSou => write!(f, "{}{}", AKAFIVE_VALUE, SOU_SUIT_CHAR), //MMMMMM choices choic,
-                Sou::SixSou => write!(f, "{}{}", SIX_VALUE, SOU_SUIT_CHAR),
-                Sou::SevenSou => write!(f, "{}{}", SEVEN_VALUE, SOU_SUIT_CHAR),
-                Sou::EightSou => write!(f, "{}{}", EIGHT_VALUE, SOU_SUIT_CHAR),
-                Sou::NineSou => write!(f, "{}{}", NINE_VALUE, SOU_SUIT_CHAR),
+                MpsValue::One => write!(f, "{}{}", ONE_VALUE, SOU_SUIT_CHAR),
+                MpsValue::Two => write!(f, "{}{}", TWO_VALUE, SOU_SUIT_CHAR),
+                MpsValue::Three => write!(f, "{}{}", THREE_VALUE, SOU_SUIT_CHAR),
+                MpsValue::Four => write!(f, "{}{}", FOUR_VALUE, SOU_SUIT_CHAR),
+                MpsValue::Five => write!(f, "{}{}", FIVE_VALUE, SOU_SUIT_CHAR),
+                MpsValue::AkaFive => write!(f, "{}{}", AKAFIVE_VALUE, SOU_SUIT_CHAR), //MMMMMM choices choic,
+                MpsValue::Six => write!(f, "{}{}", SIX_VALUE, SOU_SUIT_CHAR),
+                MpsValue::Seven => write!(f, "{}{}", SEVEN_VALUE, SOU_SUIT_CHAR),
+                MpsValue::Eight => write!(f, "{}{}", EIGHT_VALUE, SOU_SUIT_CHAR),
+                MpsValue::Nine => write!(f, "{}{}", NINE_VALUE, SOU_SUIT_CHAR),
             },
             Tile::Wind(t) => match t {
-                Wind::East => write!(f, "{}{}", EAST_VALUE, WIND_SUIT_CHAR),
-                Wind::South => write!(f, "{}{}", SOUTH_VALUE, WIND_SUIT_CHAR),
-                Wind::West => write!(f, "{}{}", WEST_VALUE, WIND_SUIT_CHAR),
-                Wind::North => write!(f, "{}{}", NORTH_VALUE, WIND_SUIT_CHAR),
+                WValue::East => write!(f, "{}{}", EAST_VALUE, WIND_SUIT_CHAR),
+                WValue::South => write!(f, "{}{}", SOUTH_VALUE, WIND_SUIT_CHAR),
+                WValue::West => write!(f, "{}{}", WEST_VALUE, WIND_SUIT_CHAR),
+                WValue::North => write!(f, "{}{}", NORTH_VALUE, WIND_SUIT_CHAR),
             },
             Tile::Dragon(t) => match t {
-                Dragon::Red => write!(f, "{}{}", RED_VALUE, DRAGON_SUIT_CHAR),
-                Dragon::Green => write!(f, "{}{}", GREEN_VALUE, DRAGON_SUIT_CHAR),
-                Dragon::White => write!(f, "{}{}", WHITE_VALUE, DRAGON_SUIT_CHAR),
+                DValue::Red => write!(f, "{}{}", RED_VALUE, DRAGON_SUIT_CHAR),
+                DValue::Green => write!(f, "{}{}", GREEN_VALUE, DRAGON_SUIT_CHAR),
+                DValue::White => write!(f, "{}{}", WHITE_VALUE, DRAGON_SUIT_CHAR),
             },
         }
     }
@@ -143,67 +115,67 @@ impl Iterator for Tile {
         match self {
             Tile::Man(t) => {
                 let next_t = match t {
-                    Man::OneMan => Man::TwoMan,
-                    Man::TwoMan => Man::ThreeMan,
-                    Man::ThreeMan => Man::FourMan,
-                    Man::FourMan => Man::FiveMan,
-                    Man::FiveMan => Man::SixMan,
-                    Man::AkaFiveMan => Man::SixMan,
-                    Man::SixMan => Man::SevenMan,
-                    Man::SevenMan => Man::EightMan,
-                    Man::EightMan => Man::NineMan,
-                    Man::NineMan => Man::OneMan,
+                    MpsValue::One => MpsValue::Two,
+                    MpsValue::Two => MpsValue::Three,
+                    MpsValue::Three => MpsValue::Four,
+                    MpsValue::Four => MpsValue::Five,
+                    MpsValue::Five => MpsValue::Six,
+                    MpsValue::AkaFive => MpsValue::Six,
+                    MpsValue::Six => MpsValue::Seven,
+                    MpsValue::Seven => MpsValue::Eight,
+                    MpsValue::Eight => MpsValue::Nine,
+                    MpsValue::Nine => MpsValue::One,
                 };
                 *t = next_t.clone();
                 Some(Tile::Man(next_t))
             }
             Tile::Pin(t) => {
                 let next_t = match t {
-                    Pin::OnePin => Pin::TwoPin,
-                    Pin::TwoPin => Pin::ThreePin,
-                    Pin::ThreePin => Pin::FourPin,
-                    Pin::FourPin => Pin::FivePin,
-                    Pin::FivePin => Pin::SixPin,
-                    Pin::AkaFivePin => Pin::SixPin,
-                    Pin::SixPin => Pin::SevenPin,
-                    Pin::SevenPin => Pin::EightPin,
-                    Pin::EightPin => Pin::NinePin,
-                    Pin::NinePin => Pin::OnePin,
+                    MpsValue::One => MpsValue::Two,
+                    MpsValue::Two => MpsValue::Three,
+                    MpsValue::Three => MpsValue::Four,
+                    MpsValue::Four => MpsValue::Five,
+                    MpsValue::Five => MpsValue::Six,
+                    MpsValue::AkaFive => MpsValue::Six,
+                    MpsValue::Six => MpsValue::Seven,
+                    MpsValue::Seven => MpsValue::Eight,
+                    MpsValue::Eight => MpsValue::Nine,
+                    MpsValue::Nine => MpsValue::One,
                 };
                 *t = next_t.clone();
                 Some(Tile::Pin(next_t))
             }
             Tile::Sou(t) => {
                 let next_t = match t {
-                    Sou::OneSou => Sou::TwoSou,
-                    Sou::TwoSou => Sou::ThreeSou,
-                    Sou::ThreeSou => Sou::FourSou,
-                    Sou::FourSou => Sou::FiveSou,
-                    Sou::FiveSou => Sou::SixSou,
-                    Sou::AkaFiveSou => Sou::SixSou,
-                    Sou::SixSou => Sou::SevenSou,
-                    Sou::SevenSou => Sou::EightSou,
-                    Sou::EightSou => Sou::NineSou,
-                    Sou::NineSou => Sou::OneSou,
+                    MpsValue::One => MpsValue::Two,
+                    MpsValue::Two => MpsValue::Three,
+                    MpsValue::Three => MpsValue::Four,
+                    MpsValue::Four => MpsValue::Five,
+                    MpsValue::Five => MpsValue::Six,
+                    MpsValue::AkaFive => MpsValue::Six,
+                    MpsValue::Six => MpsValue::Seven,
+                    MpsValue::Seven => MpsValue::Eight,
+                    MpsValue::Eight => MpsValue::Nine,
+                    MpsValue::Nine => MpsValue::One,
                 };
                 *t = next_t.clone();
                 Some(Tile::Sou(next_t))
             }
             Tile::Wind(t) => {
                 let next_t = match t {
-                    Wind::East => Wind::South,
-                    Wind::South => Wind::West,
-                    Wind::West => Wind::North,
-                    Wind::North => Wind::East,
+                    WValue::East => WValue::South,
+                    WValue::South => WValue::West,
+                    WValue::West => WValue::North,
+                    WValue::North => WValue::East,
                 };
                 *t = next_t.clone();
                 Some(Tile::Wind(next_t))
             }
             Tile::Dragon(t) => {
                 let next_t = match t {
-                    Dragon::Red => Dragon::White,
-                    Dragon::White => Dragon::Green,
-                    Dragon::Green => Dragon::Red,
+                    DValue::Red => DValue::White,
+                    DValue::White => DValue::Green,
+                    DValue::Green => DValue::Red,
                 };
                 *t = next_t.clone();
                 Some(Tile::Dragon(next_t))
@@ -225,102 +197,102 @@ impl Tile {
         match suit {
             Suit::Manzu => {
                 if value == ONE_VALUE {
-                    Ok(Tile::Man(Man::OneMan))
+                    Ok(Tile::Man(MpsValue::One))
                 } else if value == TWO_VALUE {
-                    return Ok(Tile::Man(Man::TwoMan));
+                    return Ok(Tile::Man(MpsValue::Two));
                 } else if value == THREE_VALUE {
-                    return Ok(Tile::Man(Man::ThreeMan));
+                    return Ok(Tile::Man(MpsValue::Three));
                 } else if value == FOUR_VALUE {
-                    return Ok(Tile::Man(Man::FourMan));
+                    return Ok(Tile::Man(MpsValue::Four));
                 } else if value == FIVE_VALUE {
                     if isaka {
-                        return Ok(Tile::Man(Man::AkaFiveMan));
+                        return Ok(Tile::Man(MpsValue::AkaFive));
                     }
-                    return Ok(Tile::Man(Man::FiveMan));
+                    return Ok(Tile::Man(MpsValue::Five));
                 } else if value == SIX_VALUE {
-                    return Ok(Tile::Man(Man::SixMan));
+                    return Ok(Tile::Man(MpsValue::Six));
                 } else if value == SEVEN_VALUE {
-                    return Ok(Tile::Man(Man::SevenMan));
+                    return Ok(Tile::Man(MpsValue::Seven));
                 } else if value == EIGHT_VALUE {
-                    return Ok(Tile::Man(Man::EightMan));
+                    return Ok(Tile::Man(MpsValue::Eight));
                 } else if value == NINE_VALUE {
-                    return Ok(Tile::Man(Man::NineMan));
+                    return Ok(Tile::Man(MpsValue::Nine));
                 } else {
                     return Err(HandErr::InvalidTile);
                 }
             }
             Suit::Pinzu => {
                 if value == ONE_VALUE {
-                    Ok(Tile::Pin(Pin::OnePin))
+                    Ok(Tile::Pin(MpsValue::One))
                 } else if value == TWO_VALUE {
-                    return Ok(Tile::Pin(Pin::TwoPin));
+                    return Ok(Tile::Pin(MpsValue::Two));
                 } else if value == THREE_VALUE {
-                    return Ok(Tile::Pin(Pin::ThreePin));
+                    return Ok(Tile::Pin(MpsValue::Three));
                 } else if value == FOUR_VALUE {
-                    return Ok(Tile::Pin(Pin::FourPin));
+                    return Ok(Tile::Pin(MpsValue::Four));
                 } else if value == FIVE_VALUE {
                     if isaka {
-                        return Ok(Tile::Pin(Pin::AkaFivePin));
+                        return Ok(Tile::Pin(MpsValue::AkaFive));
                     }
-                    return Ok(Tile::Pin(Pin::FivePin));
+                    return Ok(Tile::Pin(MpsValue::Five));
                 } else if value == SIX_VALUE {
-                    return Ok(Tile::Pin(Pin::SixPin));
+                    return Ok(Tile::Pin(MpsValue::Six));
                 } else if value == SEVEN_VALUE {
-                    return Ok(Tile::Pin(Pin::SevenPin));
+                    return Ok(Tile::Pin(MpsValue::Seven));
                 } else if value == EIGHT_VALUE {
-                    return Ok(Tile::Pin(Pin::EightPin));
+                    return Ok(Tile::Pin(MpsValue::Eight));
                 } else if value == NINE_VALUE {
-                    return Ok(Tile::Pin(Pin::NinePin));
+                    return Ok(Tile::Pin(MpsValue::Nine));
                 } else {
                     return Err(HandErr::InvalidTile);
                 }
             }
             Suit::Souzu => {
                 if value == ONE_VALUE {
-                    Ok(Tile::Sou(Sou::OneSou))
+                    Ok(Tile::Sou(MpsValue::One))
                 } else if value == TWO_VALUE {
-                    return Ok(Tile::Sou(Sou::TwoSou));
+                    return Ok(Tile::Sou(MpsValue::Two));
                 } else if value == THREE_VALUE {
-                    return Ok(Tile::Sou(Sou::ThreeSou));
+                    return Ok(Tile::Sou(MpsValue::Three));
                 } else if value == FOUR_VALUE {
-                    return Ok(Tile::Sou(Sou::FourSou));
+                    return Ok(Tile::Sou(MpsValue::Four));
                 } else if value == FIVE_VALUE {
                     if isaka {
-                        return Ok(Tile::Sou(Sou::AkaFiveSou));
+                        return Ok(Tile::Sou(MpsValue::AkaFive));
                     }
-                    return Ok(Tile::Sou(Sou::FiveSou));
+                    return Ok(Tile::Sou(MpsValue::Five));
                 } else if value == SIX_VALUE {
-                    return Ok(Tile::Sou(Sou::SixSou));
+                    return Ok(Tile::Sou(MpsValue::Six));
                 } else if value == SEVEN_VALUE {
-                    return Ok(Tile::Sou(Sou::SevenSou));
+                    return Ok(Tile::Sou(MpsValue::Seven));
                 } else if value == EIGHT_VALUE {
-                    return Ok(Tile::Sou(Sou::EightSou));
+                    return Ok(Tile::Sou(MpsValue::Eight));
                 } else if value == NINE_VALUE {
-                    return Ok(Tile::Sou(Sou::NineSou));
+                    return Ok(Tile::Sou(MpsValue::Nine));
                 } else {
                     return Err(HandErr::InvalidTile);
                 }
             }
             Suit::Wind => {
                 if value == WEST_VALUE || value == WEST_VALUE_Z {
-                    Ok(Tile::Wind(Wind::West))
+                    Ok(Tile::Wind(WValue::West))
                 } else if value == EAST_VALUE || value == EAST_VALUE_Z {
-                    return Ok(Tile::Wind(Wind::East));
+                    return Ok(Tile::Wind(WValue::East));
                 } else if value == SOUTH_VALUE || value == SOUTH_VALUE_Z {
-                    return Ok(Tile::Wind(Wind::South));
+                    return Ok(Tile::Wind(WValue::South));
                 } else if value == NORTH_VALUE || value == NORTH_VALUE_Z {
-                    return Ok(Tile::Wind(Wind::North));
+                    return Ok(Tile::Wind(WValue::North));
                 } else {
                     return Err(HandErr::InvalidTile);
                 }
             }
             Suit::Dragon => {
                 if value == RED_VALUE || value == RED_VALUE_Z {
-                    Ok(Tile::Dragon(Dragon::Red))
+                    Ok(Tile::Dragon(DValue::Red))
                 } else if value == GREEN_VALUE || value == GREEN_VALUE_Z {
-                    return Ok(Tile::Dragon(Dragon::Green));
+                    return Ok(Tile::Dragon(DValue::Green));
                 } else if value == WHITE_VALUE || value == WHITE_VALUE_Z {
-                    return Ok(Tile::Dragon(Dragon::White));
+                    return Ok(Tile::Dragon(DValue::White));
                 } else {
                     return Err(HandErr::InvalidTile);
                 }
@@ -339,9 +311,9 @@ impl Tile {
     }
 
     pub fn is_aka(&self) -> bool {
-        if *self == Tile::Man(Man::AkaFiveMan)
-            || *self == Tile::Pin(Pin::AkaFivePin)
-            || *self == Tile::Sou(Sou::AkaFiveSou)
+        if *self == Tile::Man(MpsValue::AkaFive)
+            || *self == Tile::Pin(MpsValue::AkaFive)
+            || *self == Tile::Sou(MpsValue::AkaFive)
         {
             return true;
         }
@@ -349,12 +321,12 @@ impl Tile {
     }
 
     pub fn is_terminal(&self) -> bool {
-        if *self == Tile::Man(Man::OneMan)
-            || *self == Tile::Man(Man::NineMan)
-            || *self == Tile::Pin(Pin::OnePin)
-            || *self == Tile::Pin(Pin::NinePin)
-            || *self == Tile::Sou(Sou::OneSou)
-            || *self == Tile::Sou(Sou::NineSou)
+        if *self == Tile::Man(MpsValue::One)
+            || *self == Tile::Man(MpsValue::Nine)
+            || *self == Tile::Pin(MpsValue::One)
+            || *self == Tile::Pin(MpsValue::Nine)
+            || *self == Tile::Sou(MpsValue::One)
+            || *self == Tile::Sou(MpsValue::Nine)
         {
             return true;
         }
@@ -367,103 +339,119 @@ impl Tile {
 
     pub fn value(&self) -> char {
         match self {
-            Tile::Man(Man::OneMan) => ONE_VALUE,
-            Tile::Man(Man::TwoMan) => TWO_VALUE,
-            Tile::Man(Man::ThreeMan) => THREE_VALUE,
-            Tile::Man(Man::FourMan) => FOUR_VALUE,
-            Tile::Man(Man::FiveMan) => FIVE_VALUE,
-            Tile::Man(Man::AkaFiveMan) => FIVE_VALUE,
-            Tile::Man(Man::SixMan) => SIX_VALUE,
-            Tile::Man(Man::SevenMan) => SEVEN_VALUE,
-            Tile::Man(Man::EightMan) => EIGHT_VALUE,
-            Tile::Man(Man::NineMan) => NINE_VALUE,
+            Tile::Man(MpsValue::One) => ONE_VALUE,
+            Tile::Man(MpsValue::Two) => TWO_VALUE,
+            Tile::Man(MpsValue::Three) => THREE_VALUE,
+            Tile::Man(MpsValue::Four) => FOUR_VALUE,
+            Tile::Man(MpsValue::Five) => FIVE_VALUE,
+            Tile::Man(MpsValue::AkaFive) => FIVE_VALUE,
+            Tile::Man(MpsValue::Six) => SIX_VALUE,
+            Tile::Man(MpsValue::Seven) => SEVEN_VALUE,
+            Tile::Man(MpsValue::Eight) => EIGHT_VALUE,
+            Tile::Man(MpsValue::Nine) => NINE_VALUE,
 
-            Tile::Sou(Sou::OneSou) => ONE_VALUE,
-            Tile::Sou(Sou::TwoSou) => TWO_VALUE,
-            Tile::Sou(Sou::ThreeSou) => THREE_VALUE,
-            Tile::Sou(Sou::FourSou) => FOUR_VALUE,
-            Tile::Sou(Sou::FiveSou) => FIVE_VALUE,
-            Tile::Sou(Sou::AkaFiveSou) => FIVE_VALUE,
-            Tile::Sou(Sou::SixSou) => SIX_VALUE,
-            Tile::Sou(Sou::SevenSou) => SEVEN_VALUE,
-            Tile::Sou(Sou::EightSou) => EIGHT_VALUE,
-            Tile::Sou(Sou::NineSou) => NINE_VALUE,
+            Tile::Sou(MpsValue::One) => ONE_VALUE,
+            Tile::Sou(MpsValue::Two) => TWO_VALUE,
+            Tile::Sou(MpsValue::Three) => THREE_VALUE,
+            Tile::Sou(MpsValue::Four) => FOUR_VALUE,
+            Tile::Sou(MpsValue::Five) => FIVE_VALUE,
+            Tile::Sou(MpsValue::AkaFive) => FIVE_VALUE,
+            Tile::Sou(MpsValue::Six) => SIX_VALUE,
+            Tile::Sou(MpsValue::Seven) => SEVEN_VALUE,
+            Tile::Sou(MpsValue::Eight) => EIGHT_VALUE,
+            Tile::Sou(MpsValue::Nine) => NINE_VALUE,
 
-            Tile::Pin(Pin::OnePin) => ONE_VALUE,
-            Tile::Pin(Pin::TwoPin) => TWO_VALUE,
-            Tile::Pin(Pin::ThreePin) => THREE_VALUE,
-            Tile::Pin(Pin::FourPin) => FOUR_VALUE,
-            Tile::Pin(Pin::FivePin) => FIVE_VALUE,
-            Tile::Pin(Pin::AkaFivePin) => FIVE_VALUE,
-            Tile::Pin(Pin::SixPin) => SIX_VALUE,
-            Tile::Pin(Pin::SevenPin) => SEVEN_VALUE,
-            Tile::Pin(Pin::EightPin) => EIGHT_VALUE,
-            Tile::Pin(Pin::NinePin) => NINE_VALUE,
+            Tile::Pin(MpsValue::One) => ONE_VALUE,
+            Tile::Pin(MpsValue::Two) => TWO_VALUE,
+            Tile::Pin(MpsValue::Three) => THREE_VALUE,
+            Tile::Pin(MpsValue::Four) => FOUR_VALUE,
+            Tile::Pin(MpsValue::Five) => FIVE_VALUE,
+            Tile::Pin(MpsValue::AkaFive) => FIVE_VALUE,
+            Tile::Pin(MpsValue::Six) => SIX_VALUE,
+            Tile::Pin(MpsValue::Seven) => SEVEN_VALUE,
+            Tile::Pin(MpsValue::Eight) => EIGHT_VALUE,
+            Tile::Pin(MpsValue::Nine) => NINE_VALUE,
 
-            Tile::Wind(Wind::East) => EAST_VALUE,
-            Tile::Wind(Wind::South) => SOUTH_VALUE,
-            Tile::Wind(Wind::West) => WEST_VALUE,
-            Tile::Wind(Wind::North) => NORTH_VALUE,
+            Tile::Wind(WValue::East) => EAST_VALUE,
+            Tile::Wind(WValue::South) => SOUTH_VALUE,
+            Tile::Wind(WValue::West) => WEST_VALUE,
+            Tile::Wind(WValue::North) => NORTH_VALUE,
 
-            Tile::Dragon(Dragon::Red) => RED_VALUE,
-            Tile::Dragon(Dragon::Green) => GREEN_VALUE,
-            Tile::Dragon(Dragon::White) => WHITE_VALUE,
+            Tile::Dragon(DValue::Red) => RED_VALUE,
+            Tile::Dragon(DValue::Green) => GREEN_VALUE,
+            Tile::Dragon(DValue::White) => WHITE_VALUE,
         }
     }
 
     /// Parse the group value into an integer.
-    pub fn parse_u8(&self) -> Result<u8, std::num::ParseIntError> {
-        self.value().to_string().parse()
+    pub fn parse_u8(&self) -> Result<u8, HandErr> {
+        // self.value().to_string().parse();
+
+        match self {
+            Tile::Man(t) | Tile::Pin(t) | Tile::Sou(t) => match t {
+                MpsValue::One => Ok(1),
+                MpsValue::Two => Ok(2),
+                MpsValue::Three => Ok(3),
+                MpsValue::Four => Ok(4),
+                MpsValue::Five => Ok(5),
+                MpsValue::AkaFive => Ok(5),
+                MpsValue::Six => Ok(6),
+                MpsValue::Seven => Ok(7),
+                MpsValue::Eight => Ok(8),
+                MpsValue::Nine => Ok(9),
+            },
+            _ => Err(HandErr::Err),
+        }
     }
 
     pub fn get_emoji(&self) -> &str {
         match self {
             Tile::Man(t) => match t {
-                Man::OneMan => "🀇",
-                Man::TwoMan => "🀈",
-                Man::ThreeMan => "🀉",
-                Man::FourMan => "🀊",
-                Man::FiveMan => "🀋",
-                Man::AkaFiveMan => "🀋", //MMMMMM choices choices
-                Man::SixMan => "🀌",
-                Man::SevenMan => "🀍",
-                Man::EightMan => "🀎",
-                Man::NineMan => "🀏",
+                MpsValue::One => "🀇",
+                MpsValue::Two => "🀈",
+                MpsValue::Three => "🀉",
+                MpsValue::Four => "🀊",
+                MpsValue::Five => "🀋",
+                MpsValue::AkaFive => "🀋", //MMMMMM choices choices
+                MpsValue::Six => "🀌",
+                MpsValue::Seven => "🀍",
+                MpsValue::Eight => "🀎",
+                MpsValue::Nine => "🀏",
             },
             Tile::Pin(t) => match t {
-                Pin::OnePin => "🀙",
-                Pin::TwoPin => "🀚",
-                Pin::ThreePin => "🀛",
-                Pin::FourPin => "🀜",
-                Pin::FivePin => "🀝",
-                Pin::AkaFivePin => "🀝",
-                Pin::SixPin => "🀞",
-                Pin::SevenPin => "🀟",
-                Pin::EightPin => "🀠",
-                Pin::NinePin => "🀡",
+                MpsValue::One => "🀙",
+                MpsValue::Two => "🀚",
+                MpsValue::Three => "🀛",
+                MpsValue::Four => "🀜",
+                MpsValue::Five => "🀝",
+                MpsValue::AkaFive => "🀝",
+                MpsValue::Six => "🀞",
+                MpsValue::Seven => "🀟",
+                MpsValue::Eight => "🀠",
+                MpsValue::Nine => "🀡",
             },
             Tile::Sou(t) => match t {
-                Sou::OneSou => "🀐",
-                Sou::TwoSou => "🀑",
-                Sou::ThreeSou => "🀒",
-                Sou::FourSou => "🀓",
-                Sou::FiveSou => "🀔",
-                Sou::AkaFiveSou => "🀔",
-                Sou::SixSou => "🀕",
-                Sou::SevenSou => "🀖",
-                Sou::EightSou => "🀗",
-                Sou::NineSou => "🀘",
+                MpsValue::One => "🀐",
+                MpsValue::Two => "🀑",
+                MpsValue::Three => "🀒",
+                MpsValue::Four => "🀓",
+                MpsValue::Five => "🀔",
+                MpsValue::AkaFive => "🀔",
+                MpsValue::Six => "🀕",
+                MpsValue::Seven => "🀖",
+                MpsValue::Eight => "🀗",
+                MpsValue::Nine => "🀘",
             },
             Tile::Wind(t) => match t {
-                Wind::East => "🀀",
-                Wind::South => "🀁",
-                Wind::West => "🀂",
-                Wind::North => "🀃",
+                WValue::East => "🀀",
+                WValue::South => "🀁",
+                WValue::West => "🀂",
+                WValue::North => "🀃",
             },
             Tile::Dragon(t) => match t {
-                Dragon::Red => "🀄",
-                Dragon::Green => "🀅",
-                Dragon::White => "🀆",
+                DValue::Red => "🀄",
+                DValue::Green => "🀅",
+                DValue::White => "🀆",
             },
         }
     }
@@ -500,7 +488,6 @@ pub const NINE_VALUE: char = '9';
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
     #[test]
     fn is_aka() {
@@ -520,126 +507,126 @@ mod tests {
     #[test]
     fn get_dragon_tile() {
         let tile = Tile::new(RED_VALUE, &Suit::Dragon).unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Red));
+        assert_eq!(tile, Tile::Dragon(DValue::Red));
         let tile = Tile::new(SEVEN_VALUE, &Suit::Dragon).unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Red));
+        assert_eq!(tile, Tile::Dragon(DValue::Red));
         let tile: Tile = "rd".to_string().try_into().unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Red));
+        assert_eq!(tile, Tile::Dragon(DValue::Red));
         let tile: Tile = "7z".to_string().try_into().unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Red));
+        assert_eq!(tile, Tile::Dragon(DValue::Red));
 
         let tile = Tile::new(GREEN_VALUE, &Suit::Dragon).unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Green));
+        assert_eq!(tile, Tile::Dragon(DValue::Green));
         let tile = Tile::new(SIX_VALUE, &Suit::Dragon).unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Green));
+        assert_eq!(tile, Tile::Dragon(DValue::Green));
         let tile: Tile = "gd".to_string().try_into().unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Green));
+        assert_eq!(tile, Tile::Dragon(DValue::Green));
         let tile: Tile = "6z".to_string().try_into().unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::Green));
+        assert_eq!(tile, Tile::Dragon(DValue::Green));
 
         let tile = Tile::new(WHITE_VALUE, &Suit::Dragon).unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::White));
+        assert_eq!(tile, Tile::Dragon(DValue::White));
         let tile = Tile::new(FIVE_VALUE, &Suit::Dragon).unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::White));
+        assert_eq!(tile, Tile::Dragon(DValue::White));
         let tile: Tile = "wd".to_string().try_into().unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::White));
+        assert_eq!(tile, Tile::Dragon(DValue::White));
         let tile: Tile = "5z".to_string().try_into().unwrap();
-        assert_eq!(tile, Tile::Dragon(Dragon::White));
+        assert_eq!(tile, Tile::Dragon(DValue::White));
     }
 
     #[test]
     fn get_wind_tile() {
         let tile = Tile::new(EAST_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::East));
+        assert_eq!(tile, Tile::Wind(WValue::East));
         let tile = Tile::new(ONE_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::East));
+        assert_eq!(tile, Tile::Wind(WValue::East));
 
         let tile = Tile::new(WEST_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::West));
+        assert_eq!(tile, Tile::Wind(WValue::West));
         let tile = Tile::new(THREE_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::West));
+        assert_eq!(tile, Tile::Wind(WValue::West));
 
         let tile = Tile::new(SOUTH_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::South));
+        assert_eq!(tile, Tile::Wind(WValue::South));
         let tile = Tile::new(TWO_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::South));
+        assert_eq!(tile, Tile::Wind(WValue::South));
 
         let tile = Tile::new(NORTH_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::North));
+        assert_eq!(tile, Tile::Wind(WValue::North));
         let tile = Tile::new(FOUR_VALUE, &Suit::Wind).unwrap();
-        assert_eq!(tile, Tile::Wind(Wind::North));
+        assert_eq!(tile, Tile::Wind(WValue::North));
     }
 
     #[test]
     fn get_man_tile() {
         let tile = Tile::new(ONE_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::OneMan));
+        assert_eq!(tile, Tile::Man(MpsValue::One));
         let tile = Tile::new(TWO_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::TwoMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Two));
         let tile = Tile::new(THREE_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::ThreeMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Three));
         let tile = Tile::new(FOUR_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::FourMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Four));
         let tile = Tile::new(FIVE_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::FiveMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Five));
         let tile = Tile::new(SIX_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::SixMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Six));
         let tile = Tile::new(SEVEN_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::SevenMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Seven));
         let tile = Tile::new(EIGHT_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::EightMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Eight));
         let tile = Tile::new(NINE_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::NineMan));
+        assert_eq!(tile, Tile::Man(MpsValue::Nine));
         let tile = Tile::new(AKAFIVE_VALUE, &Suit::Manzu).unwrap();
-        assert_eq!(tile, Tile::Man(Man::AkaFiveMan));
+        assert_eq!(tile, Tile::Man(MpsValue::AkaFive));
     }
 
     #[test]
     fn get_pin_tile() {
         let tile = Tile::new(ONE_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::OnePin));
+        assert_eq!(tile, Tile::Pin(MpsValue::One));
         let tile = Tile::new(TWO_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::TwoPin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Two));
         let tile = Tile::new(THREE_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::ThreePin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Three));
         let tile = Tile::new(FOUR_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::FourPin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Four));
         let tile = Tile::new(FIVE_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::FivePin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Five));
         let tile = Tile::new(SIX_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::SixPin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Six));
         let tile = Tile::new(SEVEN_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::SevenPin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Seven));
         let tile = Tile::new(EIGHT_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::EightPin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Eight));
         let tile = Tile::new(NINE_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::NinePin));
+        assert_eq!(tile, Tile::Pin(MpsValue::Nine));
         let tile = Tile::new(AKAFIVE_VALUE, &Suit::Pinzu).unwrap();
-        assert_eq!(tile, Tile::Pin(Pin::AkaFivePin));
+        assert_eq!(tile, Tile::Pin(MpsValue::AkaFive));
     }
 
     #[test]
     fn get_sou_tile() {
         let tile = Tile::new(ONE_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::OneSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::One));
         let tile = Tile::new(TWO_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::TwoSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Two));
         let tile = Tile::new(THREE_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::ThreeSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Three));
         let tile = Tile::new(FOUR_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::FourSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Four));
         let tile = Tile::new(FIVE_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::FiveSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Five));
         let tile = Tile::new(SIX_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::SixSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Six));
         let tile = Tile::new(SEVEN_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::SevenSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Seven));
         let tile = Tile::new(EIGHT_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::EightSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Eight));
         let tile = Tile::new(NINE_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::NineSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::Nine));
         let tile = Tile::new(AKAFIVE_VALUE, &Suit::Souzu).unwrap();
-        assert_eq!(tile, Tile::Sou(Sou::AkaFiveSou));
+        assert_eq!(tile, Tile::Sou(MpsValue::AkaFive));
     }
 
     #[test]

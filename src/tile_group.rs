@@ -101,11 +101,12 @@ impl TileGroup {
     /// use mahc::tile_group::GroupType;
     /// use mahc::tile::Tile;
     /// use mahc::hand::error::HandErr;
-    /// use mahc::tile::Man;
+    /// use mahc::tile::Tile::Man;
+    /// use mahc::tile::MpsValue;
     ///
-    /// let tile_7 = Tile::Man(Man::SevenMan);
-    /// let tile_8 = Tile::Man(Man::EightMan);
-    /// let tile_9 = Tile::Man(Man::NineMan);
+    /// let tile_7 = Tile::Man(MpsValue::Seven);
+    /// let tile_8 = Tile::Man(MpsValue::Eight);
+    /// let tile_9 = Tile::Man(MpsValue::Nine);
     /// let group = vec![tile_7.clone(), tile_8.clone(), tile_9.clone()];
     ///
     /// let tile_group = TileGroup::new(group, true).unwrap();
@@ -176,11 +177,6 @@ impl TileGroup {
         false
     }
 
-    /// Parse the group value into an integer.
-    pub fn parse_u8(&self) -> Result<u8, std::num::ParseIntError> {
-        self.value().to_string().parse()
-    }
-
     /// Get value of tilegroup
     pub fn value(&self) -> char {
         self.tiles[0].value()
@@ -218,6 +214,11 @@ impl TileGroup {
             out.push('a');
         }
         out
+    }
+
+    /// Parse the group value into an integer.
+    pub fn parse_u8(&self) -> Result<u8, HandErr> {
+        self.tiles[0].parse_u8()
     }
 }
 

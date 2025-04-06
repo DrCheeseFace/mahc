@@ -74,8 +74,8 @@ impl Hand {
                         return Err(HandErr::InvalidShape);
                     }
 
-                    let win_int = win_tile.parse_u8().unwrap();
-                    let last_int = last_group.parse_u8().unwrap();
+                    let win_int = win_tile.parse_u8()?;
+                    let last_int = last_group.parse_u8()?;
 
                     if win_int != last_int && win_int != last_int + 1 && win_int != last_int + 2 {
                         return Err(HandErr::InvalidShape);
@@ -193,9 +193,9 @@ impl Hand {
         }
 
         for pair in self.pairs() {
-            if pair.value() == self.prev_tile.value()
-                || pair.value() == self.seat_tile.value()
-                || pair.suit() == Suit::Dragon
+            if pair.tiles[0] == self.prev_tile
+                || pair.tiles[0] == self.seat_tile
+                || pair.tiles[0].suit() == Suit::Dragon
             {
                 fu_types.push(Fu::Toitsu);
             }
@@ -206,12 +206,10 @@ impl Hand {
             match group.group_type {
                 GroupType::Pair => fu_types.push(Fu::SingleWait),
                 GroupType::Sequence => {
-                    let mid_tile = group.parse_u8().unwrap() + 1;
-                    if self.win_tile().parse_u8().unwrap() == mid_tile {
-                        fu_types.push(Fu::SingleWait);
-                    }
-
-                    if !self.win_tile().is_terminal() && group.is_terminal() {
+                    let mid_tile = group.tiles[0].clone().next().unwrap();
+                    if self.win_tile() == mid_tile
+                        || !self.win_tile().is_terminal() && group.is_terminal()
+                    {
                         fu_types.push(Fu::SingleWait);
                     }
                 }
@@ -700,9 +698,9 @@ impl Hand {
             .map(|x| x.tiles[0].clone())
             .collect();
 
-        trips.contains(&Tile::Dragon(Dragon::Red))
-            && trips.contains(&Tile::Dragon(Dragon::Green))
-            && trips.contains(&Tile::Dragon(Dragon::White))
+        trips.contains(&Tile::Dragon(DValue::Red))
+            && trips.contains(&Tile::Dragon(DValue::Green))
+            && trips.contains(&Tile::Dragon(DValue::White))
     }
 
     /// Check if the hand contains four concealed triplets.
@@ -773,12 +771,12 @@ impl Hand {
         for groups in self.groups.iter() {
             for tile in groups.tiles.iter() {
                 if ![
-                    Tile::Dragon(Dragon::Green),
-                    Tile::Sou(Sou::TwoSou),
-                    Tile::Sou(Sou::ThreeSou),
-                    Tile::Sou(Sou::FourSou),
-                    Tile::Sou(Sou::SixSou),
-                    Tile::Sou(Sou::EightSou),
+                    Tile::Dragon(DValue::Green),
+                    Tile::Sou(MpsValue::Two),
+                    Tile::Sou(MpsValue::Three),
+                    Tile::Sou(MpsValue::Four),
+                    Tile::Sou(MpsValue::Six),
+                    Tile::Sou(MpsValue::Eight),
                 ]
                 .contains(tile)
                 {
@@ -911,19 +909,19 @@ impl Hand {
         }
 
         let mut orphans = vec![
-            Tile::Man(Man::OneMan),
-            Tile::Man(Man::NineMan),
-            Tile::Sou(Sou::OneSou),
-            Tile::Sou(Sou::NineSou),
-            Tile::Pin(Pin::OnePin),
-            Tile::Pin(Pin::NinePin),
-            Tile::Wind(Wind::East),
-            Tile::Wind(Wind::South),
-            Tile::Wind(Wind::West),
-            Tile::Wind(Wind::North),
-            Tile::Dragon(Dragon::Red),
-            Tile::Dragon(Dragon::White),
-            Tile::Dragon(Dragon::Green),
+            Tile::Man(MpsValue::One),
+            Tile::Man(MpsValue::Nine),
+            Tile::Sou(MpsValue::One),
+            Tile::Sou(MpsValue::Nine),
+            Tile::Pin(MpsValue::One),
+            Tile::Pin(MpsValue::Nine),
+            Tile::Wind(WValue::East),
+            Tile::Wind(WValue::South),
+            Tile::Wind(WValue::West),
+            Tile::Wind(WValue::North),
+            Tile::Dragon(DValue::Red),
+            Tile::Dragon(DValue::White),
+            Tile::Dragon(DValue::Green),
         ];
 
         for tile in self.groups.iter() {
@@ -946,7 +944,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_tenhou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile() == Tile::Wind(Wind::East) {
+        if tenhou && self.seat_tile() == Tile::Wind(WValue::East) {
             return true;
         }
         false
@@ -956,7 +954,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_chiihou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile() == Tile::Wind(Wind::East) {
+        if tenhou && self.seat_tile() == Tile::Wind(WValue::East) {
             return true;
         }
         false

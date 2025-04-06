@@ -272,6 +272,153 @@ mod tests {
     }
 
     #[test]
+    fn fu_cal_single_wait_sequence_with_terminal() {
+        let out = Hand::new_from_strings(
+            vec![
+                "444m".to_string(),
+                "555so".to_string(),
+                "rrrrd".to_string(),
+                "11s".to_string(),
+                "789p".to_string(),
+            ],
+            "8p".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual_fu = out.calculate_fu(true);
+        assert_eq!(calculate_total_fu_value(&actual_fu), 70);
+        assert_eq!(
+            actual_fu,
+            [
+                Fu::BasePoints,
+                Fu::Tsumo,
+                Fu::SimpleClosedTriplet,
+                Fu::SimpleOpenTriplet,
+                Fu::NonSimpleClosedKan,
+                Fu::SingleWait,
+            ]
+        );
+    }
+
+    #[test]
+    fn fu_cal_single_wait_sequence_not_terminal() {
+        let out = Hand::new_from_strings(
+            vec![
+                "444m".to_string(),
+                "555so".to_string(),
+                "rrrrd".to_string(),
+                "11s".to_string(),
+                "456p".to_string(),
+            ],
+            "5p".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual_fu = out.calculate_fu(true);
+        assert_eq!(calculate_total_fu_value(&actual_fu), 70);
+        assert_eq!(
+            actual_fu,
+            [
+                Fu::BasePoints,
+                Fu::Tsumo,
+                Fu::SimpleClosedTriplet,
+                Fu::SimpleOpenTriplet,
+                Fu::NonSimpleClosedKan,
+                Fu::SingleWait,
+            ]
+        );
+    }
+
+    #[test]
+    fn fu_cal_toitsu() {
+        let out = Hand::new_from_strings(
+            vec![
+                "444m".to_string(),
+                "555so".to_string(),
+                "rrrrd".to_string(),
+                "456p".to_string(),
+                "EEw".to_string(),
+            ],
+            "Ew".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual_fu = out.calculate_fu(true);
+        assert_eq!(calculate_total_fu_value(&actual_fu), 70);
+        assert_eq!(
+            actual_fu,
+            [
+                Fu::BasePoints,
+                Fu::Tsumo,
+                Fu::SimpleClosedTriplet,
+                Fu::SimpleOpenTriplet,
+                Fu::NonSimpleClosedKan,
+                Fu::Toitsu,
+                Fu::SingleWait,
+            ]
+        );
+
+        let out = Hand::new_from_strings(
+            vec![
+                "444m".to_string(),
+                "555so".to_string(),
+                "rrrrd".to_string(),
+                "456p".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual_fu = out.calculate_fu(true);
+        assert_eq!(calculate_total_fu_value(&actual_fu), 70);
+        assert_eq!(
+            actual_fu,
+            [
+                Fu::BasePoints,
+                Fu::Tsumo,
+                Fu::SimpleClosedTriplet,
+                Fu::SimpleOpenTriplet,
+                Fu::NonSimpleClosedKan,
+                Fu::Toitsu,
+                Fu::SingleWait,
+            ]
+        );
+
+        let out = Hand::new_from_strings(
+            vec![
+                "444m".to_string(),
+                "555so".to_string(),
+                "rrrrd".to_string(),
+                "456p".to_string(),
+                "WWw".to_string(),
+            ],
+            "Ww".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        let actual_fu = out.calculate_fu(true);
+        assert_eq!(calculate_total_fu_value(&actual_fu), 70);
+        assert_eq!(
+            actual_fu,
+            [
+                Fu::BasePoints,
+                Fu::Tsumo,
+                Fu::SimpleClosedTriplet,
+                Fu::SimpleOpenTriplet,
+                Fu::NonSimpleClosedKan,
+                Fu::Toitsu,
+                Fu::SingleWait,
+            ]
+        );
+    }
+
+    #[test]
     fn fu_cal_tsu_closed() {
         let out = Hand::new_from_strings(
             vec![
