@@ -16,6 +16,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Run fmt check 
+      run: cargo fmt --check 
+    - name: Run clippy check
+      run: cargo clippy -- -A clippy::too_many_arguments
     - name: Build
       run: cargo build --verbose
     - name: Run tests
