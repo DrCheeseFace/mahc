@@ -24,6 +24,8 @@ impl std::fmt::Display for Hand {
             out.push_str(&group.to_string());
             out.push(' ');
         }
+        out.push_str("| ");
+        out.push_str(&self.win_tile.to_string());
         write!(f, "{}", out)
     }
 }
@@ -967,9 +969,8 @@ impl Hand {
             out.push_str(&group.get_emoji());
             out.push(' ');
         }
-        out.push_str("  ");
+        out.push_str("| ");
         out.push_str(self.win_tile.get_emoji());
-        out.push_str(" w");
         out
     }
 }

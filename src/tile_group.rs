@@ -1,6 +1,6 @@
 use crate::hand::error::HandErr;
 use crate::suit::Suit;
-use crate::tile::{Dragon, Tile};
+use crate::tile::Tile;
 use crate::{
     AKAFIVE_VALUE, EAST_VALUE, EAST_VALUE_Z, EIGHT_VALUE, FIVE_VALUE, FOUR_VALUE, GREEN_VALUE,
     GREEN_VALUE_Z, NINE_VALUE, NORTH_VALUE, NORTH_VALUE_Z, ONE_VALUE, OPEN_CHAR, RED_VALUE,
@@ -212,9 +212,6 @@ impl TileGroup {
         for tile in self.tiles.iter() {
             out.push_str(tile.get_emoji());
             // for some reason, the red dragon emoji is different and doesnt need a space added
-            if *tile != Tile::Dragon(Dragon::Red) {
-                out.push(' ');
-            }
             if tile.is_aka() {
                 has_aka = true;
             }
