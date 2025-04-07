@@ -243,6 +243,7 @@ pub fn calculate(han: &HanValue, fu: &FuValue) -> Result<Payment, HandErr> {
     Ok(payment)
 }
 
+/// Checks for invalid scoring conditions scoring conditions
 pub fn validate_scoring_conditions(
     hand: &Hand,
     tsumo: bool,
