@@ -1,5 +1,8 @@
+pub mod error;
+
+use error::CalcErr;
+
 use crate::fu::{calculate_total_fu_value, Fu};
-use crate::hand::error::HandErr;
 use crate::hand::Hand;
 use crate::limit_hand::LimitHands;
 use crate::payment::Payment;
@@ -20,7 +23,7 @@ pub fn get_hand_score(
     chankan: bool,
     tenhou: bool,
     honba: HonbaCounter,
-) -> Result<Score, HandErr> {
+) -> Result<Score, CalcErr> {
     if let Some(t) = validate_scoring_conditions(
         hand,
         tsumo,
@@ -47,7 +50,7 @@ pub fn get_hand_score(
     );
 
     if yaku.0 == 0 {
-        return Err(HandErr::NoYaku);
+        return Err(CalcErr::NoYaku);
     }
 
     //fuck you chiitoiistu, why u gota be different, AND YOU TOO PINFU
@@ -187,7 +190,7 @@ pub fn get_yaku_han(
 }
 
 /// Calculate the payment amounts from the list of yakuman yaku.
-pub fn calculate_yakuman(yaku: &Vec<Yaku>) -> Result<Payment, HandErr> {
+pub fn calculate_yakuman(yaku: &Vec<Yaku>) -> Result<Payment, CalcErr> {
     let mut total = 0;
     for y in yaku {
         if y.is_yakuman() {
@@ -195,7 +198,7 @@ pub fn calculate_yakuman(yaku: &Vec<Yaku>) -> Result<Payment, HandErr> {
         }
     }
     if total == 0 {
-        return Err(HandErr::NoYaku);
+        return Err(CalcErr::NoYaku);
     }
 
     let basepoints: u64 = (8_000 * total).into();
@@ -205,13 +208,13 @@ pub fn calculate_yakuman(yaku: &Vec<Yaku>) -> Result<Payment, HandErr> {
 }
 
 /// Calculate the payment amounts from the han, fu, and number of honba (repeat counters).
-pub fn calculate(han: &HanValue, fu: &FuValue) -> Result<Payment, HandErr> {
+pub fn calculate(han: &HanValue, fu: &FuValue) -> Result<Payment, CalcErr> {
     if *han == 0 {
-        return Err(HandErr::NoHan);
+        return Err(CalcErr::NoHan);
     }
 
     if *fu == 0 {
-        return Err(HandErr::NoFu);
+        return Err(CalcErr::NoFu);
     }
 
     let k = LimitHands::get_limit_hand(*han, *fu);
@@ -236,37 +239,37 @@ pub fn validate_scoring_conditions(
     haitei: bool,
     rinshan: bool,
     chankan: bool,
-) -> Option<HandErr> {
+) -> Option<CalcErr> {
     if tsumo && chankan {
-        return Some(HandErr::ChankanTsumo);
+        return Some(CalcErr::ChankanTsumo);
     }
     if rinshan && (!tsumo) {
-        return Some(HandErr::RinshanWithoutTsumo);
+        return Some(CalcErr::RinshanWithoutTsumo);
     }
     if rinshan && ippatsu {
-        return Some(HandErr::RinshanIppatsu);
+        return Some(CalcErr::RinshanIppatsu);
     }
     if riichi && doubleriichi {
-        return Some(HandErr::DuplicateRiichi);
+        return Some(CalcErr::DuplicateRiichi);
     }
     if ippatsu && !(riichi || doubleriichi) {
-        return Some(HandErr::IppatsuWithoutRiichi);
+        return Some(CalcErr::IppatsuWithoutRiichi);
     }
     if doubleriichi && ippatsu && haitei {
-        return Some(HandErr::DoubleRiichiHaiteiIppatsu);
+        return Some(CalcErr::DoubleRiichiHaiteiIppatsu);
     }
     if doubleriichi && haitei && chankan {
-        return Some(HandErr::DoubleRiichiHaiteiChankan);
+        return Some(CalcErr::DoubleRiichiHaiteiChankan);
     }
     if hand.kans().is_empty() && rinshan {
-        return Some(HandErr::RinshanKanWithoutKan);
+        return Some(CalcErr::RinshanKanWithoutKan);
     }
     None
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::hand::{error::HandErr, Hand};
+    use crate::{calc::error::CalcErr, hand::Hand};
 
     use super::validate_scoring_conditions;
 
@@ -288,7 +291,7 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, true, false, false, false, false, true, false)
                 .unwrap();
-        assert_eq!(HandErr::RinshanKanWithoutKan, actual)
+        assert_eq!(CalcErr::RinshanKanWithoutKan, actual)
     }
 
     #[test]
@@ -309,7 +312,7 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, true, false, false, false, false, false, true)
                 .unwrap();
-        assert_eq!(HandErr::ChankanTsumo, actual)
+        assert_eq!(CalcErr::ChankanTsumo, actual)
     }
     #[test]
     fn validate_scoring_conditions_rinshan_without_tsumo() {
@@ -329,7 +332,7 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, false, false, false, false, false, true, false)
                 .unwrap();
-        assert_eq!(HandErr::RinshanWithoutTsumo, actual)
+        assert_eq!(CalcErr::RinshanWithoutTsumo, actual)
     }
 
     #[test]
@@ -350,7 +353,7 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, true, false, false, true, false, true, false)
                 .unwrap();
-        assert_eq!(HandErr::RinshanIppatsu, actual)
+        assert_eq!(CalcErr::RinshanIppatsu, actual)
     }
 
     #[test]
@@ -371,7 +374,7 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, false, true, true, true, false, false, false)
                 .unwrap();
-        assert_eq!(HandErr::DuplicateRiichi, actual)
+        assert_eq!(CalcErr::DuplicateRiichi, actual)
     }
 
     #[test]
@@ -392,7 +395,7 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, false, false, false, true, false, false, false)
                 .unwrap();
-        assert_eq!(HandErr::IppatsuWithoutRiichi, actual);
+        assert_eq!(CalcErr::IppatsuWithoutRiichi, actual);
     }
 
     #[test]
@@ -413,7 +416,7 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, false, false, true, true, true, false, false)
                 .unwrap();
-        assert_eq!(HandErr::DoubleRiichiHaiteiIppatsu, actual);
+        assert_eq!(CalcErr::DoubleRiichiHaiteiIppatsu, actual);
     }
 
     #[test]
@@ -434,6 +437,6 @@ mod tests {
         let actual =
             validate_scoring_conditions(&hand, false, false, true, false, true, false, true)
                 .unwrap();
-        assert_eq!(HandErr::DoubleRiichiHaiteiChankan, actual);
+        assert_eq!(CalcErr::DoubleRiichiHaiteiChankan, actual);
     }
 }

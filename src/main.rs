@@ -4,7 +4,7 @@ use std::io::Write;
 
 use clap::Parser;
 use mahc::calc;
-use mahc::hand::error::HandErr;
+use mahc::calc::error::CalcErr;
 use mahc::hand::Hand;
 use mahc::payment::Payment;
 use mahc::score::{FuValue, HanValue, HonbaCounter, Score};
@@ -95,7 +95,7 @@ pub struct Args {
     emoji: bool,
 }
 
-pub fn parse_calculator(args: &Args) -> Result<String, HandErr> {
+pub fn parse_calculator(args: &Args) -> Result<String, CalcErr> {
     let honba = args.ba;
     let han: HanValue = args.manual.as_ref().unwrap()[0];
     let fu: FuValue = args.manual.as_ref().unwrap()[1].into();
@@ -108,19 +108,24 @@ pub fn parse_calculator(args: &Args) -> Result<String, HandErr> {
     }
 }
 
-pub fn parse_hand(args: &Args) -> Result<String, HandErr> {
+pub fn parse_hand(args: &Args) -> Result<String, CalcErr> {
     if args.tiles.is_none() {
-        return Err(HandErr::NoHandTiles);
+        return Err(CalcErr::NoHandTiles);
     }
     if args.win.is_none() {
-        return Err(HandErr::NoWinTile);
+        return Err(CalcErr::NoWinTile);
     }
     let hand = Hand::new_from_strings(
         args.tiles.clone().unwrap(),
         args.win.clone().unwrap(),
         args.prev.clone(),
         args.seat.clone(),
-    )?;
+    );
+
+    let hand = match hand {
+        Err(t) => return Err(CalcErr::HandErr(t)),
+        Ok(h) => h,
+    };
 
     let doras: Option<Vec<Tile>> = args.dora.clone().map(|dora_tiles| {
         dora_tiles
@@ -292,7 +297,7 @@ pub fn parse_file(args: &Args) {
             return;
         }
     };
-    let results: Vec<Result<String, HandErr>> = file_contents
+    let results: Vec<Result<String, CalcErr>> = file_contents
         .lines()
         .filter(|x| !x.is_empty())
         .map(|x| {
@@ -318,7 +323,7 @@ pub fn parse_file(args: &Args) {
     }
 }
 
-pub fn printout(result: &Result<String, HandErr>) {
+pub fn printout(result: &Result<String, CalcErr>) {
     match result {
         Ok(o) => {
             println!("{}", o);
@@ -329,7 +334,7 @@ pub fn printout(result: &Result<String, HandErr>) {
     }
 }
 
-pub fn writeout(result: &Result<String, HandErr>, output: &str) {
+pub fn writeout(result: &Result<String, CalcErr>, output: &str) {
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
@@ -367,22 +372,20 @@ fn main() {
 
 #[cfg(test)]
 mod test {
-    use mahc::hand::error::HandErr;
-
     use super::*;
 
     #[test]
     fn no_han_for_calc() {
         let args = Args::parse_from(["", "--manual", "0", "30", "--ba", "3"]);
         let out = parse_calculator(&args);
-        assert_eq!(out.unwrap_err(), HandErr::NoHan);
+        assert_eq!(out.unwrap_err(), CalcErr::NoHan);
     }
 
     #[test]
     fn no_fu_for_calc() {
         let args = Args::parse_from(["", "--manual", "4", "0", "--ba", "3"]);
         let out = parse_calculator(&args);
-        assert_eq!(out.unwrap_err(), HandErr::NoFu);
+        assert_eq!(out.unwrap_err(), CalcErr::NoFu);
     }
 
     #[test]

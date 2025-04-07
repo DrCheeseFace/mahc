@@ -398,7 +398,7 @@ impl Tile {
                 MpsValue::Eight => Ok(8),
                 MpsValue::Nine => Ok(9),
             },
-            _ => Err(HandErr::Err),
+            _ => Err(HandErr::ParseErr),
         }
     }
 
