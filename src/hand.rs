@@ -885,12 +885,17 @@ impl Hand {
 
     /// Check if the hand has three wind triplets (or quads) and a wind pair.
     pub fn is_shousuushii(&self) -> bool {
-        self.groups
+        if self.pairs()[0].suit() != Suit::Wind {
+            return false;
+        }
+        self.triplets()
             .iter()
-            .filter(|i| i.suit() == Suit::Wind && i.group_type != GroupType::None)
+            .chain(self.kans().iter())
+            .filter(|i| i.suit() == Suit::Wind)
             .count()
-            == 4
+            == 3
     }
+
 
     /// Check if the hand has four wind triplets (or quads).
     pub fn is_daisuushii(&self) -> bool {
@@ -1148,6 +1153,20 @@ mod tests {
                 "WWWw".to_string(),
                 "NNNw".to_string(),
                 "999s".to_string(),
+            ],
+            "9s".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        assert!(!out.is_shousuushii());
+        let out = Hand::new_from_strings(
+            vec![
+                "EEEEw".to_string(),
+                "SSSw".to_string(),
+                "WWWw".to_string(),
+                "NNNw".to_string(),
+                "99s".to_string(),
             ],
             "9s".to_string(),
             "Ew".to_string(),
