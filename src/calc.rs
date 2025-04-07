@@ -7,23 +7,6 @@ use crate::score::{FuValue, HanValue, HonbaCounter, Score};
 use crate::tile::Tile;
 use crate::yaku::Yaku;
 
-#[derive(Debug, PartialEq)]
-pub enum CalculatorErrors {
-    NoHan,
-    NoFu,
-    NoYaku,
-}
-
-impl std::fmt::Display for CalculatorErrors {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Self::NoHan => write!(f, "No han provided!"),
-            Self::NoFu => write!(f, "No fu provided!"),
-            Self::NoYaku => write!(f, "No Yaku!"),
-        }
-    }
-}
-
 /// Get the score breakdown of the hand.
 pub fn get_hand_score(
     hand: &Hand,
@@ -243,7 +226,7 @@ pub fn calculate(han: &HanValue, fu: &FuValue) -> Result<Payment, HandErr> {
     Ok(payment)
 }
 
-/// Checks for invalid scoring conditions scoring conditions
+/// Checks for invalid scoring conditions
 pub fn validate_scoring_conditions(
     hand: &Hand,
     tsumo: bool,
