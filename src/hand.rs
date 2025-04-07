@@ -896,7 +896,6 @@ impl Hand {
             == 3
     }
 
-
     /// Check if the hand has four wind triplets (or quads).
     pub fn is_daisuushii(&self) -> bool {
         self.triplets()
