@@ -197,6 +197,7 @@ impl TileGroup {
         self.tiles[0].suit().clone()
     }
 
+    /// get emoji format for tile group
     pub fn get_emoji(&self) -> String {
         let mut out: String = String::new();
         let mut has_aka: bool = false;

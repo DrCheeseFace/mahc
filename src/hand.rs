@@ -964,6 +964,7 @@ impl Hand {
         false
     }
 
+    /// get emoji format for hand
     pub fn get_emoji(&self) -> String {
         let mut out = String::new();
         for group in self.groups.iter() {

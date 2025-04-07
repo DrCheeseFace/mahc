@@ -402,6 +402,7 @@ impl Tile {
         }
     }
 
+    /// get emoji format for tile
     pub fn get_emoji(&self) -> &str {
         match self {
             Tile::Man(t) => match t {
