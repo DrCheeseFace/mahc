@@ -1,5 +1,5 @@
 
-# Riichi Mahjong Calculator
+# Riichi Mahjong Scoring Library and Calculator 
 CLI tool that calculates the score of a hand in riichi mahjong. <br>
 - Manual mode (Calculator Mode): given han and fu, calculates the score <br>
 - Normal mode: given a hand, calculates the score with included yaku and fu <br>

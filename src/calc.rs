@@ -38,8 +38,17 @@ pub fn get_hand_score(
     tenhou: bool,
     honba: HonbaCounter,
 ) -> Result<Score, HandErr> {
-    if hand.kans().is_empty() && rinshan {
-        return Err(HandErr::RinshanKanWithoutKan);
+    if let Some(t) = validate_scoring_conditions(
+        hand,
+        tsumo,
+        riichi,
+        doubleriichi,
+        ippatsu,
+        haitei,
+        rinshan,
+        chankan,
+    ) {
+        return Err(t);
     }
 
     let yaku = get_yaku_han(
@@ -232,4 +241,215 @@ pub fn calculate(han: &HanValue, fu: &FuValue) -> Result<Payment, HandErr> {
     let payment = Payment::from_han_and_fu(*han, *fu);
 
     Ok(payment)
+}
+
+pub fn validate_scoring_conditions(
+    hand: &Hand,
+    tsumo: bool,
+    riichi: bool,
+    doubleriichi: bool,
+    ippatsu: bool,
+    haitei: bool,
+    rinshan: bool,
+    chankan: bool,
+) -> Option<HandErr> {
+    if tsumo && chankan {
+        return Some(HandErr::ChankanTsumo);
+    }
+    if rinshan && (!tsumo) {
+        return Some(HandErr::RinshanWithoutTsumo);
+    }
+    if rinshan && ippatsu {
+        return Some(HandErr::RinshanIppatsu);
+    }
+    if riichi && doubleriichi {
+        return Some(HandErr::DuplicateRiichi);
+    }
+    if ippatsu && !(riichi || doubleriichi) {
+        return Some(HandErr::IppatsuWithoutRiichi);
+    }
+    if doubleriichi && ippatsu && haitei {
+        return Some(HandErr::DoubleRiichiHaiteiIppatsu);
+    }
+    if doubleriichi && haitei && chankan {
+        return Some(HandErr::DoubleRiichiHaiteiChankan);
+    }
+    if hand.kans().is_empty() && rinshan {
+        return Some(HandErr::RinshanKanWithoutKan);
+    }
+    None
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::hand::{error::HandErr, Hand};
+
+    use super::validate_scoring_conditions;
+
+    #[test]
+    fn validate_scoring_conditions_rinshankan_without_kan() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, true, false, false, false, false, true, false)
+                .unwrap();
+        assert_eq!(HandErr::RinshanKanWithoutKan, actual)
+    }
+
+    #[test]
+    fn validate_scoring_conditions_chankan_tsumo() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, true, false, false, false, false, false, true)
+                .unwrap();
+        assert_eq!(HandErr::ChankanTsumo, actual)
+    }
+    #[test]
+    fn validate_scoring_conditions_rinshan_without_tsumo() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, false, false, false, false, false, true, false)
+                .unwrap();
+        assert_eq!(HandErr::RinshanWithoutTsumo, actual)
+    }
+
+    #[test]
+    fn validate_scoring_conditions_rinshan_ippatsu() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, true, false, false, true, false, true, false)
+                .unwrap();
+        assert_eq!(HandErr::RinshanIppatsu, actual)
+    }
+
+    #[test]
+    fn validate_scoring_conditions_double_riichi() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, false, true, true, true, false, false, false)
+                .unwrap();
+        assert_eq!(HandErr::DuplicateRiichi, actual)
+    }
+
+    #[test]
+    fn validate_scoring_conditions_ippatsu_without_riichi() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, false, false, false, true, false, false, false)
+                .unwrap();
+        assert_eq!(HandErr::IppatsuWithoutRiichi, actual);
+    }
+
+    #[test]
+    fn validate_scoring_conditions_double_riichi_haitei_ippatsu() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, false, false, true, true, true, false, false)
+                .unwrap();
+        assert_eq!(HandErr::DoubleRiichiHaiteiIppatsu, actual);
+    }
+
+    #[test]
+    fn validate_scoring_conditions_double_riichi_haitei_chankan() {
+        let hand = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "505s".to_string(),
+                "EEEw".to_string(),
+                "999m".to_string(),
+                "rrd".to_string(),
+            ],
+            "rd".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        let actual =
+            validate_scoring_conditions(&hand, false, false, true, false, true, false, true)
+                .unwrap();
+        assert_eq!(HandErr::DoubleRiichiHaiteiChankan, actual);
+    }
 }

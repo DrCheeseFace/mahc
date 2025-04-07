@@ -115,39 +115,20 @@ pub fn parse_hand(args: &Args) -> Result<String, HandErr> {
     if args.win.is_none() {
         return Err(HandErr::NoWinTile);
     }
-    if args.tsumo && args.chankan {
-        return Err(HandErr::ChankanTsumo);
-    }
-    if args.rinshan && (!args.tsumo) {
-        return Err(HandErr::RinshanWithoutTsumo);
-    }
-    if args.rinshan && args.ippatsu {
-        return Err(HandErr::RinshanIppatsu);
-    }
-    if args.riichi && args.doubleriichi {
-        return Err(HandErr::DuplicateRiichi);
-    }
-    if args.ippatsu && !(args.riichi || args.doubleriichi) {
-        return Err(HandErr::IppatsuWithoutRiichi);
-    }
-    if args.doubleriichi && args.ippatsu && args.haitei {
-        return Err(HandErr::DoubleRiichiHaiteiIppatsu);
-    }
-    if args.doubleriichi && args.haitei && args.chankan {
-        return Err(HandErr::DoubleRiichiHaiteiChankan);
-    }
     let hand = Hand::new_from_strings(
         args.tiles.clone().unwrap(),
         args.win.clone().unwrap(),
         args.prev.clone(),
         args.seat.clone(),
     )?;
+
     let doras: Option<Vec<Tile>> = args.dora.clone().map(|dora_tiles| {
         dora_tiles
             .into_iter()
             .filter_map(|tile| tile.try_into().ok())
             .collect()
     });
+
     let score = calc::get_hand_score(
         &hand,
         &doras,
@@ -161,8 +142,6 @@ pub fn parse_hand(args: &Args) -> Result<String, HandErr> {
         args.tenhou,
         args.ba,
     )?;
-
-    //TODO VALIDATION (i dont care enough yet)
 
     let printout = if args.json {
         json_hand_out(&score)
