@@ -1,5 +1,4 @@
 pub mod error;
-
 use crate::fu::Fu;
 use crate::suit::Suit;
 use crate::tile::*;
@@ -133,6 +132,9 @@ impl Hand {
     /// Calculate the fu types in the hand.
     pub fn calculate_fu(&self, tsumo: bool) -> Vec<Fu> {
         let mut fu_types: Vec<Fu> = vec![];
+        if self.is_chiitoitsu() {
+            return vec![Fu::BasePointsChitoi];
+        }
 
         fu_types.push(Fu::BasePoints);
 
@@ -217,6 +219,23 @@ impl Hand {
             }
         }
 
+        //handling pinfu :(
+        if self.groups.len() != 13 && !self.isopen {
+            if tsumo {
+                if fu_types
+                    .iter()
+                    .all(|fu| matches!(fu, Fu::BasePoints | Fu::ClosedRon | Fu::Tsumo))
+                {
+                    return vec![Fu::BasePoints];
+                }
+            } else if fu_types
+                .iter()
+                .all(|fu| matches!(fu, Fu::BasePoints | Fu::ClosedRon))
+            {
+                return vec![Fu::BasePoints, Fu::ClosedRon];
+            }
+        }
+
         fu_types
     }
 
@@ -248,10 +267,10 @@ impl Hand {
     ///    "gd".to_string().try_into().unwrap(),
     /// ];
     ///
-    /// let dora = hand.get_dora_count(Some(doras));
+    /// let dora = hand.get_dora_count(&Some(doras));
     /// assert_eq!(dora, 14);
     /// ```
-    pub fn get_dora_count(&self, dora_indicator_tiles: Option<Vec<Tile>>) -> u32 {
+    pub fn get_dora_count(&self, dora_indicator_tiles: &Option<Vec<Tile>>) -> u32 {
         let mut count = 0;
         for group in &self.groups {
             for tile in group.tiles.iter() {
@@ -2800,7 +2819,7 @@ mod tile_group_tests {
         let dora_5: Tile = "gd".to_string().try_into().unwrap();
         let doras = vec![dora_1, dora_2, dora_3, dora_4, dora_5];
 
-        let dora = out.get_dora_count(Some(doras));
+        let dora = out.get_dora_count(&Some(doras));
         assert_eq!(dora, 14);
     }
     #[test]
@@ -2818,7 +2837,7 @@ mod tile_group_tests {
             "Ew".to_string(),
         )
         .unwrap();
-        let dora = out.get_dora_count(None);
+        let dora = out.get_dora_count(&None);
         assert_eq!(dora, 1);
     }
 }
