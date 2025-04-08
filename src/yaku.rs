@@ -1,15 +1,15 @@
 use crate::score::HanValue;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Yaku {
     // One Han Yaku
-    Tanyao,   //done
-    Iipeikou, //done
-    Yakuhai,  //done
+    Tanyao,
+    Iipeikou,
+    Yakuhai,
     MenzenTsumo,
     Pinfu,
-    Riichi,  //(bascially done by default)
-    Ippatsu, //(bascially done by default)
+    Riichi,
+    Ippatsu,
     Haitei,
     RinshanKaihou,
     Chankan,
@@ -30,7 +30,7 @@ pub enum Yaku {
     // Three Han Yaku
     Honitsu,
     JunchanTaiyao,
-    Ryanpeikou, //done
+    Ryanpeikou,
 
     // Six Han Yaku
     Chinitsu,
@@ -124,23 +124,23 @@ impl Yaku {
                 }
             }
 
-            Self::KazoeYakuman => "Kazoe Yakuman ",
-            Self::KokushiMusou => "KokushiMusou Yakuman",
-            Self::KokushiMusou13SidedWait => "KokushiMusou Yakuman 13 sided wait",
-            Self::Suuankou => "Suuankou Yakuman",
-            Self::Daisangen => "Daisangen Yakuman",
-            Self::Shousuushii => "Shousuushii Yakuman",
-            Self::Daisuushii => "Daisuushii Yakuman",
-            Self::Tsuuiisou => "Tsuuiisou Yakuman",
-            Self::Chinroutou => "Chinroutou Yakuman",
-            Self::Ryuuiisou => "Ryuuiisou Yakuman",
-            Self::ChuurenPoutou => "ChuurenPoutou Yakuman",
-            Self::Suukantsu => "Suukantsu Yakuman",
-            Self::Tenhou => "Tenhou Yakuman",
-            Self::Chiihou => "Chiihou Yakuman",
-            Self::SuuankouTankiWait => "Suuankou Yakuman Tanki Wait ",
-            Self::Daichiishin => "Daichiishin Yakuman",
-            Self::ChuurenPoutou9SidedWait => "ChuurenPoutou Yakuman 9 sided wait ",
+            Self::KazoeYakuman => "Kazoe Yakuman: 1",
+            Self::KokushiMusou => "KokushiMusou Yakuman: 1",
+            Self::KokushiMusou13SidedWait => "KokushiMusou Yakuman 13 sided wait: 1",
+            Self::Suuankou => "Suuankou Yakuman: 1",
+            Self::Daisangen => "Daisangen Yakuman: 1",
+            Self::Shousuushii => "Shousuushii Yakuman: 1",
+            Self::Daisuushii => "Daisuushii Yakuman: 2",
+            Self::Tsuuiisou => "Tsuuiisou Yakuman: 1",
+            Self::Chinroutou => "Chinroutou Yakuman: 1",
+            Self::Ryuuiisou => "Ryuuiisou Yakuman: 1",
+            Self::ChuurenPoutou => "ChuurenPoutou Yakuman: 1",
+            Self::Suukantsu => "Suukantsu Yakuman: 1",
+            Self::Tenhou => "Tenhou Yakuman: 1",
+            Self::Chiihou => "Chiihou Yakuman: 1",
+            Self::SuuankouTankiWait => "Suuankou Yakuman Tanki Wait: 1",
+            Self::Daichiishin => "Daichiishin Yakuman: 1",
+            Self::ChuurenPoutou9SidedWait => "ChuurenPoutou Yakuman 9 sided wait: 1",
         }
         .to_string()
     }
@@ -208,7 +208,6 @@ impl Yaku {
             | Self::Suuankou
             | Self::Daisangen
             | Self::Shousuushii
-            | Self::Daisuushii
             | Self::Tsuuiisou
             | Self::Chinroutou
             | Self::Ryuuiisou
@@ -219,6 +218,7 @@ impl Yaku {
             | Self::Chiihou
             | Self::SuuankouTankiWait
             | Self::Daichiishin => 1,
+            Self::Daisuushii => 2,
         }
     }
 

@@ -37,8 +37,9 @@ pub fn get_hand_score(
         return Err(t);
     }
 
-    let yaku = get_yaku_han(
+    let yaku_and_yakuman = get_yaku_and_yakuman(
         hand,
+        tsumo,
         riichi,
         doubleriichi,
         ippatsu,
@@ -46,65 +47,57 @@ pub fn get_hand_score(
         rinshan,
         chankan,
         tenhou,
-        tsumo,
     );
-
-    if yaku.0 == 0 {
+    if yaku_and_yakuman.is_empty() {
         return Err(CalcErr::NoYaku);
     }
 
-    //fuck you chiitoiistu, why u gota be different, AND YOU TOO PINFU
-    //i can move this to calculatefu method maybe?
-    let fu = {
-        if yaku.1.contains(&Yaku::Chiitoitsu) {
-            vec![Fu::BasePointsChitoi]
-        } else if yaku.1.contains(&Yaku::Pinfu) {
-            if tsumo {
-                vec![Fu::BasePoints]
-            } else {
-                vec![Fu::BasePoints, Fu::ClosedRon]
-            }
-        } else {
-            hand.calculate_fu(tsumo)
-        }
+    let scoring_yaku: Vec<Yaku> = if yaku_and_yakuman.iter().any(|yaku| yaku.is_yakuman()) {
+        yaku_and_yakuman
+            .iter()
+            .filter(|yaku| yaku.is_yakuman())
+            .copied()
+            .collect()
+    } else {
+        yaku_and_yakuman
+            .iter()
+            .filter(|yaku| !yaku.is_yakuman())
+            .copied()
+            .collect()
     };
+
+    let fu_types = hand.calculate_fu(tsumo);
+    let fu_value = calculate_total_fu_value(&fu_types);
 
     // get han from dora tiles
-    let dora_count = hand.get_dora_count(dora.clone());
-
-    let han = yaku.0 + dora_count;
-    let fu_value = calculate_total_fu_value(&fu);
-
-    let mut has_yakuman = false;
-    for y in &yaku.1 {
-        if y.is_yakuman() {
-            has_yakuman = true;
-        }
+    let mut scoring_han: HanValue = scoring_yaku
+        .iter()
+        .map(|yaku| yaku.get_han(hand.is_open()))
+        .sum::<HanValue>();
+    let dora_count = hand.get_dora_count(dora);
+    if !scoring_yaku[0].is_yakuman() {
+        scoring_han += dora_count
     }
 
-    let payment = if has_yakuman {
-        calculate_yakuman(&yaku.1)?
-    } else {
-        //can unwrap here because check for yaku earlier
-        calculate(&han, &fu_value).unwrap()
-    };
+    let payment = calculate_yaku_payment(&yaku_and_yakuman, &fu_types, dora, hand)?;
+
     let score = Score::new(
         payment,
-        yaku.1,
-        fu,
-        han,
+        scoring_yaku,
+        fu_types,
+        scoring_han,
         fu_value,
         honba,
         hand.is_open(),
         dora_count,
     );
-
     Ok(score)
 }
 
-/// Get the yaku score and list of yaku given a hand and some round context.
-pub fn get_yaku_han(
+// Get list of yaku and yakuman from hand
+pub fn get_yaku_and_yakuman(
     hand: &Hand,
+    tsumo: bool,
     riichi: bool,
     doubleriichi: bool,
     ippatsu: bool,
@@ -112,10 +105,28 @@ pub fn get_yaku_han(
     rinshan: bool,
     chankan: bool,
     tenhou: bool,
-    tsumo: bool,
-) -> (HanValue, Vec<Yaku>) {
-    //check if there are many yakuman, if so return only yakuman
-    //this is so unbelievably jank but it works
+) -> Vec<Yaku> {
+    let mut conditions: Vec<Yaku> = vec![];
+    for yakuman in get_yakuman(hand, tsumo, tenhou) {
+        conditions.push(yakuman);
+    }
+    for yaku in get_yaku(
+        hand,
+        tsumo,
+        riichi,
+        doubleriichi,
+        ippatsu,
+        haitei,
+        rinshan,
+        chankan,
+    ) {
+        conditions.push(yaku);
+    }
+    conditions
+}
+
+// Get list of yakuman from hand
+pub fn get_yakuman(hand: &Hand, tsumo: bool, tenhou: bool) -> Vec<Yaku> {
     let mut yakuman: Vec<Yaku> = vec![];
     let yakumanconditions = [
         (hand.is_daisangen(), Yaku::Daisangen),
@@ -135,15 +146,26 @@ pub fn get_yaku_han(
         (hand.is_tenhou(tenhou), Yaku::Tenhou),
         (hand.is_chiihou(tenhou), Yaku::Chiihou),
     ];
+
     for (condition, yaku_type) in yakumanconditions {
         if condition {
             yakuman.push(yaku_type);
         }
     }
-    if !yakuman.is_empty() {
-        return (yakuman.len() as HanValue, yakuman);
-    }
+    yakuman
+}
 
+// Get list of yaku from hand
+pub fn get_yaku(
+    hand: &Hand,
+    tsumo: bool,
+    riichi: bool,
+    doubleriichi: bool,
+    ippatsu: bool,
+    haitei: bool,
+    rinshan: bool,
+    chankan: bool,
+) -> Vec<Yaku> {
     let mut yaku: Vec<Yaku> = vec![];
     let conditions = [
         (riichi, Yaku::Riichi),
@@ -181,30 +203,40 @@ pub fn get_yaku_han(
         yaku.push(Yaku::Yakuhai);
     }
 
-    let mut yaku_han = 0;
-    for y in &yaku {
-        yaku_han += y.get_han(hand.is_open());
-    }
-
-    (yaku_han, yaku)
+    yaku
 }
 
-/// Calculate the payment amounts from the list of yakuman yaku.
-pub fn calculate_yakuman(yaku: &Vec<Yaku>) -> Result<Payment, CalcErr> {
-    let mut total = 0;
+/// Calculate the payment amounts from the list of yaku.
+pub fn calculate_yaku_payment(
+    yaku: &Vec<Yaku>,
+    fu: &Vec<Fu>,
+    dora: &Option<Vec<Tile>>,
+    hand: &Hand,
+) -> Result<Payment, CalcErr> {
+    let mut yakuman_count = 0;
+    let mut han = 0;
     for y in yaku {
         if y.is_yakuman() {
-            total += y.get_han(false);
+            yakuman_count += y.get_han(hand.is_open());
+        }
+        if !y.is_yakuman() {
+            han += y.get_han(hand.is_open());
         }
     }
-    if total == 0 {
+
+    if yakuman_count > 0 {
+        let basepoints: u64 = (8_000 * yakuman_count).into();
+        let payment = Payment::new(basepoints);
+        return Ok(payment);
+    }
+
+    if han == 0 {
         return Err(CalcErr::NoYaku);
     }
 
-    let basepoints: u64 = (8_000 * total).into();
-    let payment = Payment::new(basepoints);
-
-    Ok(payment)
+    han += hand.get_dora_count(dora);
+    let fu_value: FuValue = calculate_total_fu_value(fu);
+    calculate(&han, &fu_value)
 }
 
 /// Calculate the payment amounts from the han, fu, and number of honba (repeat counters).
@@ -269,9 +301,114 @@ pub fn validate_scoring_conditions(
 
 #[cfg(test)]
 mod tests {
-    use crate::{calc::error::CalcErr, hand::Hand};
+    use crate::{
+        calc::{error::CalcErr, get_hand_score},
+        hand::Hand,
+        tile::Tile,
+    };
 
     use super::validate_scoring_conditions;
+
+    #[test]
+    fn yakuman_scoring() {
+        let out = Hand::new_from_strings(
+            vec![
+                "EEEEw".to_string(),
+                "SSSw".to_string(),
+                "WWWw".to_string(),
+                "NNNw".to_string(),
+                "99s".to_string(),
+            ],
+            "9s".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        assert!(out.is_daisuushii());
+        let dora: Tile = "Ew".to_string().try_into().unwrap();
+        let score = get_hand_score(
+            &out,
+            &Some(vec![dora]),
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            3,
+        )
+        .unwrap();
+        assert_eq!(score.honba(), 3);
+        assert_eq!(score.dora_count(), 3);
+        assert_eq!(score.yaku().len(), 3);
+        assert_eq!(score.han(), 4);
+        assert_eq!(score.payment().dealer_ron(score.honba()), 192_900)
+    }
+
+    #[test]
+    fn yaku_limit_scoring() {
+        let out = Hand::new_from_strings(
+            vec![
+                "234p".to_string(),
+                "678s".to_string(),
+                "345m".to_string(),
+                "44s".to_string(),
+                "345s".to_string(),
+            ],
+            "5s".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        let dora: Tile = "3s".to_string().try_into().unwrap();
+        let score = get_hand_score(
+            &out,
+            &Some(vec![dora]),
+            true,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            false,
+            1,
+        )
+        .unwrap();
+        assert_eq!(score.honba(), 1);
+        assert_eq!(score.dora_count(), 3);
+        assert_eq!(score.yaku().len(), 3);
+        assert_eq!(score.han(), 6);
+        assert_eq!(score.payment().dealer_ron(score.honba()), 18_300)
+    }
+
+    #[test]
+    fn yaku_nonlimit_scoring() {
+        let out = Hand::new_from_strings(
+            vec![
+                "234p".to_string(),
+                "678s".to_string(),
+                "345m".to_string(),
+                "44s".to_string(),
+                "345s".to_string(),
+            ],
+            "5s".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        let score = get_hand_score(
+            &out, &None, true, false, false, false, false, false, false, false, 1,
+        )
+        .unwrap();
+        assert_eq!(score.honba(), 1);
+        assert_eq!(score.dora_count(), 0);
+        assert_eq!(score.yaku().len(), 3);
+        assert_eq!(score.han(), 3);
+        assert_eq!(score.payment().dealer_tsumo(score.honba()), 1400)
+    }
 
     #[test]
     fn validate_scoring_conditions_rinshankan_without_kan() {
