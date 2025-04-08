@@ -277,8 +277,8 @@ cd mahc/x86_64-unknown-linux-gnu/release
 - [x] file stdIn 
 - [x] json out flag
 - [x] tile input for ```--dora``` flag
+- [x] refactor calc.rs to handle yakuman better (its a mess rn)
 - [ ] add more comprehensive tests 
-- [ ] refactor calc.rs to handle yakuman better (its a mess rn)
 - [ ] document the undocumented 
 
 ## Contributing
