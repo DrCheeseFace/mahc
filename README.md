@@ -113,7 +113,6 @@ note: the winning group has to go last (this is to calculate fu correctly)
   Yaku:
     Tsuuiisou Yakuman
     Daichiishin Yakuman
-    Shousuushii Yakuman
   
   4 Han/ 30 Fu/ 3 Honba
   Dealer: 12500 (4200)
