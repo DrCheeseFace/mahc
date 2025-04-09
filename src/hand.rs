@@ -42,12 +42,12 @@ impl Hand {
         let mut isopen = false;
 
         for group in &groups {
-            match group.group_type {
+            match group.group_type() {
                 GroupType::Triplet | GroupType::Sequence | GroupType::Kan => full_shape_count += 1,
                 GroupType::Pair => pair_count += 1,
                 GroupType::None => no_shape_count += 1,
             }
-            if group.isopen {
+            if group.isopen() {
                 isopen = true;
             }
         }
@@ -60,14 +60,14 @@ impl Hand {
         }
         // check if last group contains the winning tile
         // FUCK handling kokuushi
-        let tilecount: u8 = groups.iter().map(|s| s.group_type.tile_count()).sum();
+        let tilecount: u8 = groups.iter().map(|s| s.group_type().tile_count()).sum();
         if tilecount == 14 {
             let last_group = groups.last().unwrap();
             // last group should not be open
-            if last_group.isopen {
+            if last_group.isopen() {
                 return Err(HandErr::InvalidShape);
             }
-            match last_group.group_type {
+            match last_group.group_type() {
                 GroupType::Sequence => {
                     if win_tile.suit() != last_group.suit() {
                         return Err(HandErr::InvalidShape);
@@ -163,11 +163,11 @@ impl Hand {
                 continue;
             }
 
-            if !group_is_terminal_or_honor && tile_group.isopen {
+            if !group_is_terminal_or_honor && tile_group.isopen() {
                 fu_types.push(Fu::SimpleOpenTriplet);
             }
 
-            if !tile_group.isopen {
+            if !tile_group.isopen() {
                 if group_is_terminal_or_honor {
                     fu_types.push(Fu::NonSimpleClosedTriplet);
                 } else {
@@ -182,12 +182,12 @@ impl Hand {
             let group_is_terminal_or_honor = kan.is_honor() || kan.is_terminal();
 
             if group_is_terminal_or_honor {
-                if !kan.isopen {
+                if !kan.isopen() {
                     fu_types.push(Fu::NonSimpleClosedKan);
                 } else {
                     fu_types.push(Fu::NonSimpleOpenKan);
                 }
-            } else if !kan.isopen {
+            } else if !kan.isopen() {
                 fu_types.push(Fu::SimpleClosedKan);
             } else {
                 fu_types.push(Fu::SimpleOpenKan);
@@ -195,9 +195,9 @@ impl Hand {
         }
 
         for pair in self.pairs() {
-            if pair.tiles[0] == self.prev_tile
-                || pair.tiles[0] == self.seat_tile
-                || pair.tiles[0].suit() == Suit::Dragon
+            if pair.tiles()[0] == self.prev_tile
+                || pair.tiles()[0] == self.seat_tile
+                || pair.tiles()[0].suit() == Suit::Dragon
             {
                 fu_types.push(Fu::Toitsu);
             }
@@ -205,10 +205,10 @@ impl Hand {
 
         //fu wait cal
         if let Some(group) = self.groups.last() {
-            match group.group_type {
+            match group.group_type() {
                 GroupType::Pair => fu_types.push(Fu::SingleWait),
                 GroupType::Sequence => {
-                    let mid_tile = group.tiles[0].clone().next().unwrap();
+                    let mid_tile = group.tiles()[0].clone().next().unwrap();
                     if self.win_tile() == mid_tile
                         || !self.win_tile().is_terminal() && group.is_terminal()
                     {
@@ -273,7 +273,7 @@ impl Hand {
     pub fn get_dora_count(&self, dora_indicator_tiles: &Option<Vec<Tile>>) -> u32 {
         let mut count = 0;
         for group in &self.groups {
-            for tile in group.tiles.iter() {
+            for tile in group.tiles().iter() {
                 if tile.is_aka() {
                     count += 1;
                 }
@@ -285,22 +285,22 @@ impl Hand {
         for tile in dora_indicator_tiles.clone().unwrap() {
             let dora_tile = tile.clone().next().unwrap();
             for triplet in self.triplets() {
-                if triplet.tiles[0] == dora_tile {
+                if triplet.tiles()[0] == dora_tile {
                     count += 3;
                 }
             }
             for kan in self.kans() {
-                if kan.tiles[0] == dora_tile {
+                if kan.tiles()[0] == dora_tile {
                     count += 4;
                 }
             }
             for pair in self.pairs() {
-                if pair.tiles[0] == dora_tile {
+                if pair.tiles()[0] == dora_tile {
                     count += 2;
                 }
             }
             for sequence in self.sequences() {
-                for tile in sequence.tiles {
+                for tile in sequence.tiles() {
                     if tile == dora_tile {
                         count += 1
                     }
@@ -316,7 +316,7 @@ impl Hand {
         self.groups
             .clone()
             .into_iter()
-            .filter(|group| matches!(group.group_type, GroupType::Sequence))
+            .filter(|group| matches!(group.group_type(), GroupType::Sequence))
             .collect()
     }
 
@@ -326,7 +326,7 @@ impl Hand {
         self.groups
             .clone()
             .into_iter()
-            .filter(|group| matches!(group.group_type, GroupType::Triplet))
+            .filter(|group| matches!(group.group_type(), GroupType::Triplet))
             .collect()
     }
 
@@ -336,7 +336,7 @@ impl Hand {
         self.groups
             .clone()
             .into_iter()
-            .filter(|group| matches!(group.group_type, GroupType::Kan))
+            .filter(|group| matches!(group.group_type(), GroupType::Kan))
             .collect()
     }
 
@@ -346,7 +346,7 @@ impl Hand {
         self.groups
             .clone()
             .into_iter()
-            .filter(|group| matches!(group.group_type, GroupType::Pair))
+            .filter(|group| matches!(group.group_type(), GroupType::Pair))
             .collect()
     }
 
@@ -358,7 +358,7 @@ impl Hand {
         self.groups
             .clone()
             .into_iter()
-            .filter(|group| matches!(group.group_type, GroupType::None))
+            .filter(|group| matches!(group.group_type(), GroupType::None))
             .collect()
     }
 
@@ -464,12 +464,12 @@ impl Hand {
         let mut closed_triplet_count = 0;
 
         for triplet_group in self.triplets().iter().chain(self.kans().iter()) {
-            if !triplet_group.isopen {
+            if !triplet_group.isopen() {
                 closed_triplet_count += 1;
             }
         }
 
-        if !tsumo && self.groups.last().unwrap().group_type == GroupType::Triplet {
+        if !tsumo && self.groups.last().unwrap().group_type() == GroupType::Triplet {
             closed_triplet_count -= 1;
         }
 
@@ -577,7 +577,7 @@ impl Hand {
         let mut has_terminal: bool = false;
         let mut has_honor: bool = false;
         for group in self.groups.clone() {
-            for tile in group.tiles.iter() {
+            for tile in group.tiles().iter() {
                 if tile.is_honor() {
                     has_honor = true
                 } else if tile.is_terminal() {
@@ -714,7 +714,7 @@ impl Hand {
             .triplets()
             .iter()
             .chain(self.kans().iter())
-            .map(|x| x.tiles[0].clone())
+            .map(|x| x.tiles()[0].clone())
             .collect();
 
         trips.contains(&Tile::Dragon(DValue::Red))
@@ -734,7 +734,7 @@ impl Hand {
             return false;
         }
 
-        if !tsumo && self.groups.last().unwrap().group_type == GroupType::Triplet {
+        if !tsumo && self.groups.last().unwrap().group_type() == GroupType::Triplet {
             return false;
         }
 
@@ -753,7 +753,7 @@ impl Hand {
             return false;
         }
 
-        if self.groups.last().unwrap().group_type == GroupType::Pair {
+        if self.groups.last().unwrap().group_type() == GroupType::Pair {
             return true;
         }
 
@@ -788,7 +788,7 @@ impl Hand {
         }
 
         for groups in self.groups.iter() {
-            for tile in groups.tiles.iter() {
+            for tile in groups.tiles().iter() {
                 if ![
                     Tile::Dragon(DValue::Green),
                     Tile::Sou(MpsValue::Two),
@@ -870,7 +870,7 @@ impl Hand {
             return false;
         }
 
-        if self.groups.last().unwrap().group_type != GroupType::Pair {
+        if self.groups.last().unwrap().group_type() != GroupType::Pair {
             return false;
         }
 
@@ -948,7 +948,7 @@ impl Hand {
         ];
 
         for tile in self.groups.iter() {
-            if let Some(pos) = orphans.iter().position(|orphan| orphan == &tile.tiles[0]) {
+            if let Some(pos) = orphans.iter().position(|orphan| orphan == &tile.tiles()[0]) {
                 orphans.remove(pos);
             } else {
                 return false;
@@ -960,7 +960,7 @@ impl Hand {
 
     /// Check if the hand has one of each type of terminal and honor tile and one additional terminal or honor tile, on a 13-sided wait.
     pub fn is_kokushi13sided(&self) -> bool {
-        self.is_kokushi() && self.groups.last().unwrap().group_type == GroupType::Pair
+        self.is_kokushi() && self.groups.last().unwrap().group_type() == GroupType::Pair
     }
 
     /// Check if the player is the dealer and has a winning hand in the uninterrupted first turn.
@@ -2664,9 +2664,9 @@ mod tile_group_tests {
         )
         .unwrap();
         assert_eq!(out.pairs()[0].value(), SOUTH_VALUE);
-        assert_eq!(out.pairs()[0].group_type, GroupType::Pair);
+        assert_eq!(out.pairs()[0].group_type(), GroupType::Pair);
         assert_eq!(out.pairs()[0].suit(), Suit::Wind);
-        assert!(!out.pairs()[0].isopen);
+        assert!(!out.pairs()[0].isopen());
     }
 
     #[test]
@@ -2686,9 +2686,9 @@ mod tile_group_tests {
         )
         .unwrap();
         assert_eq!(out.triplets()[0].value(), SOUTH_VALUE);
-        assert_eq!(out.triplets()[0].group_type, GroupType::Triplet);
+        assert_eq!(out.triplets()[0].group_type(), GroupType::Triplet);
         assert_eq!(out.triplets()[0].suit(), Suit::Wind);
-        assert!(!out.triplets()[0].isopen);
+        assert!(!out.triplets()[0].isopen());
     }
 
     #[test]
@@ -2708,9 +2708,9 @@ mod tile_group_tests {
         )
         .unwrap();
         assert_eq!(out.kans()[0].value(), EAST_VALUE);
-        assert_eq!(out.kans()[0].group_type, GroupType::Kan);
+        assert_eq!(out.kans()[0].group_type(), GroupType::Kan);
         assert_eq!(out.kans()[0].suit(), Suit::Wind);
-        assert!(out.kans()[0].isopen);
+        assert!(out.kans()[0].isopen());
     }
 
     #[test]
@@ -2730,9 +2730,9 @@ mod tile_group_tests {
         )
         .unwrap();
         assert_eq!(out.kans()[0].value(), RED_VALUE);
-        assert_eq!(out.kans()[0].group_type, GroupType::Kan);
+        assert_eq!(out.kans()[0].group_type(), GroupType::Kan);
         assert_eq!(out.kans()[0].suit(), Suit::Dragon);
-        assert!(!out.kans()[0].isopen);
+        assert!(!out.kans()[0].isopen());
     }
 
     #[test]
@@ -2751,9 +2751,9 @@ mod tile_group_tests {
         )
         .unwrap();
         assert_eq!(out.triplets()[0].value(), ONE_VALUE);
-        assert_eq!(out.triplets()[0].group_type, GroupType::Triplet);
+        assert_eq!(out.triplets()[0].group_type(), GroupType::Triplet);
         assert_eq!(out.triplets()[0].suit(), Suit::Manzu);
-        assert!(!out.triplets()[0].isopen);
+        assert!(!out.triplets()[0].isopen());
     }
 
     #[test]
@@ -2772,9 +2772,9 @@ mod tile_group_tests {
         )
         .unwrap();
         assert_eq!(out.sequences()[0].value(), SEVEN_VALUE);
-        assert_eq!(out.sequences()[0].group_type, GroupType::Sequence);
+        assert_eq!(out.sequences()[0].group_type(), GroupType::Sequence);
         assert_eq!(out.sequences()[0].suit(), Suit::Souzu);
-        assert!(!out.sequences()[0].isopen);
+        assert!(!out.sequences()[0].isopen());
     }
 
     #[test]
@@ -2793,9 +2793,9 @@ mod tile_group_tests {
         )
         .unwrap();
         assert_eq!(out.sequences()[0].value(), TWO_VALUE);
-        assert_eq!(out.sequences()[0].group_type, GroupType::Sequence);
+        assert_eq!(out.sequences()[0].group_type(), GroupType::Sequence);
         assert_eq!(out.sequences()[0].suit(), Suit::Pinzu);
-        assert!(out.sequences()[0].isopen);
+        assert!(out.sequences()[0].isopen());
     }
     #[test]
     fn dora_count_all() {

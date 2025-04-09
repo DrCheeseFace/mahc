@@ -4,9 +4,9 @@ use crate::{tile::*, VALID_SEQUENCE_VALUES};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
 pub struct TileGroup {
-    pub tiles: Vec<Tile>,
-    pub isopen: bool,
-    pub group_type: GroupType,
+    tiles: Vec<Tile>,
+    isopen: bool,
+    group_type: GroupType,
 }
 
 impl std::fmt::Display for TileGroup {
@@ -111,8 +111,8 @@ impl TileGroup {
     ///
     /// let tile_group = TileGroup::new(group, true).unwrap();
     /// assert!(tile_group.is_terminal());
-    /// assert!(tile_group.isopen);
-    /// assert_eq!(tile_group.group_type, GroupType::Sequence);
+    /// assert!(tile_group.isopen());
+    /// assert_eq!(tile_group.group_type(), GroupType::Sequence);
     ///
     /// let group = vec![tile_7.clone(), tile_8.clone(), tile_8.clone()];
     ///
@@ -195,6 +195,21 @@ impl TileGroup {
     /// Get Suit
     pub fn suit(&self) -> Suit {
         self.tiles[0].suit().clone()
+    }
+
+    /// Get tiles
+    pub fn tiles(&self) -> Vec<Tile> {
+        self.tiles.clone()
+    }
+
+    /// Get open status
+    pub fn isopen(&self) -> bool {
+        self.isopen
+    }
+
+    // Get group type
+    pub fn group_type(&self) -> GroupType {
+        self.group_type.clone()
     }
 
     /// get emoji format for tile group
