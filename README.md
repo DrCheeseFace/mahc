@@ -4,7 +4,7 @@ CLI tool that calculates the score of a hand in riichi mahjong. <br>
 - Manual mode (Calculator Mode): given han and fu, calculates the score <br>
 - Normal mode: given a hand, calculates the score with included yaku and fu <br>
 
-This also doubles as a scoring library! checkout out the <a href="https://docs.rs/mahc/latest/mahc/">docs on crates.io</a>
+**This also doubles as a scoring library!** check out the <a href="https://docs.rs/mahc/latest/mahc/">docs on crates.io</a>
 
 ![demo gif](demo.gif)
 
@@ -208,78 +208,10 @@ cargo build
 #### *from latest release*
 ```
 curl -s https://api.github.com/repos/DrCheeseFace/rusty-riichi-mahjong-calculator/releases/latest | grep "browser_download_url" | cut -d '"' -f 4 | wget -i -
-unzip mahc-v1.1.0-x86_64-unknown-linux-gnu.zip -d mahc
+unzip mahc-vX.X.X-x86_64-unknown-linux-gnu.zip -d mahc
 cd mahc/x86_64-unknown-linux-gnu/release
 ./mahc --version
 ```
-
-## Implemented hand validations as of yet
-
-##### One Han Yaku
-- [x] Tanyao
-- [x] Iipeikou 
-- [x] Yakuhai 
-- [x] MenzenTsumo
-- [x] Pinfu
-- [x] Riichi
-- [x] Ippatsu
-- [x] Haitei
-- [x] RinshanKaihou
-- [x] Chankan
-
-##### Two Han Yaku
-- [x] DoubleRiichi
-- [x] Toitoi
-- [x] Ittsuu
-- [x] SanshokuDoujun
-- [x] Chantaiyao
-- [x] Sanankou
-- [x] SanshokuDoukou
-- [x] Sankantsu
-- [x] Honroutou
-- [x] Shousangen
-- [x] Chiitoitsu
-
-##### Three Han Yaku
-- [x] Honitsu
-- [x] JunchanTaiyao
-- [x] Ryanpeikou 
-
-##### Six Han Yaku
-- [x] Chinitsu
-
-##### Yakuman 
-- [x] KazoeYakuman
-- [x] KokushiMusou
-- [x] KokushiMusou 13 sided wait
-- [x] Suuankou
-- [x] Suuankou tanki wait
-- [x] Daisangen
-- [x] Shousuushii
-- [x] Daisuushii
-- [x] Tsuuiisou
-- [x] Daiichishin 
-- [x] Chinroutou
-- [x] Ryuuiisou
-- [x] ChuurenPoutou
-- [x] ChuurenPoutou 9 sided wait
-- [x] Suukantsu
-- [x] Tenhou 
-- [x] Chiihou 
-
-## TODO
-- [x] validation a hand is possible (eg not having 20 east tiles :) 
-- [x] add all da yaku 
-- [x] validation on if yaku is there 
-- [x] validate winning tile 
-- [x] propogate the errors up for a nice printout 
-- [x] validate stuff like cant riichi and double riichi. all that haitei, chankan rinshan shizz 
-- [x] file stdIn 
-- [x] json out flag
-- [x] tile input for ```--dora``` flag
-- [x] refactor calc.rs to handle yakuman better (its a mess rn)
-- [ ] add more comprehensive tests 
-- [ ] document the undocumented 
 
 ## Contributing
 <a href="https://github.com/drcheeseface/mahc">
@@ -289,8 +221,8 @@ cd mahc/x86_64-unknown-linux-gnu/release
 
 - ---- @gondoly @GuoDCZ
 
-- If you spot a bug (which there probabably are many), put in an issue with how to reproduce it
-- if youd like to contribute, DO IT (send a PR)
+- If you spot a bug, put in an issue with how to reproduce it
+- if you'd like to contribute, DO IT (send a PR)
 
 
 ![this.jpg](https://64.media.tumblr.com/07006d83e5810b3c651254e7b9a3e713/c4dc091a7806e504-ef/s400x600/cdfb08014450e71074a0a8763a67661485d59f8c.gif)
