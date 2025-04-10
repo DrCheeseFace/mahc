@@ -319,14 +319,7 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
 
     //kokushi chitoi check
     if trips.is_empty() && kans.is_empty() {
-        let kokushi_chitoi: Vec<TileGroup> = singles
-            .iter()
-            .cloned()
-            .chain(trips.iter().cloned())
-            .chain(kans.iter().cloned())
-            .chain(pairs.iter().cloned())
-            .collect();
-
+        let kokushi_chitoi: Vec<TileGroup> = [singles, trips, kans, pairs.clone()].concat();
         match validate_hand_shape(&kokushi_chitoi) {
             Some(_) => {}
             None => hands.push(kokushi_chitoi),
@@ -342,6 +335,7 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
         }
     }
 
+    // TODO good lord all might
     let mut hand_combos: Vec<Vec<TileGroup>> = Vec::new();
     let all_melds = get_melds_from_tile_counts(&tile_counts);
     for pair in pairs {
@@ -349,13 +343,17 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
             for meld_2 in all_melds.iter() {
                 for meld_3 in all_melds.iter() {
                     for meld_4 in all_melds.iter() {
-                        hand_combos.push(vec![
+                        let mut combined_melds = vec![
                             meld_1.clone(),
                             meld_2.clone(),
                             meld_3.clone(),
                             meld_4.clone(),
                             pair.clone(),
-                        ])
+                        ];
+                        combined_melds.sort();
+                        if !hand_combos.contains(&combined_melds) {
+                            hand_combos.push(combined_melds);
+                        }
                     }
                 }
             }
@@ -369,20 +367,18 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
         }
         let mut temp_hash: HashMap<Tile, u8> = HashMap::new();
         for tile in tiles.clone() {
-            if let Some(x) = temp_hash.get_mut(tile) {
-                *x += 1
-            } else {
-                temp_hash.insert(*tile, 0);
+            match temp_hash.get_mut(&tile) {
+                Some(x) => *x += 1,
+                None => {
+                    temp_hash.insert(tile.clone(), 0);
+                }
             }
         }
         if tile_counts == temp_hash {
-            hand_combo.sort();
             hands.push(hand_combo.to_vec());
         }
     }
 
-    hands.sort();
-    hands.dedup();
     hands
 }
 
@@ -967,5 +963,6 @@ mod tests {
         ];
         let hand_shapes = get_valid_hand_shapes(&tiles);
         // assert_eq!(hand_shapes.len(), 2);
+        // TODO MORE TEST CASES
     }
 }
