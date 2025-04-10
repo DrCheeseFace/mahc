@@ -231,6 +231,14 @@ pub fn json_hand_out(score: &Score) -> String {
     });
     out.to_string()
 }
+
+pub fn json_err_out(err: CalcErr) -> String {
+    let out = json!({
+        "Error" : err.to_string()
+    });
+    out.to_string()
+}
+
 pub fn default_hand_out(score: &Score, hand: &Hand, emoji_out: bool) -> String {
     let mut out: String = String::new();
     out.push('\n');
@@ -319,17 +327,21 @@ pub fn parse_file(args: &Args) {
 
     for result in results {
         writeout(&result, args.output.as_ref().unwrap());
-        printout(&result)
+        printout(&result, args.json)
     }
 }
 
-pub fn printout(result: &Result<String, CalcErr>) {
+pub fn printout(result: &Result<String, CalcErr>, json: bool) {
     match result {
         Ok(o) => {
             println!("{}", o);
         }
         Err(e) => {
-            eprintln!("Error: {}", e);
+            if json {
+                eprintln!("{}", json_err_out(*e))
+            } else {
+                eprintln!("Error: {}", e);
+            }
         }
     }
 }
@@ -367,7 +379,7 @@ fn main() {
         writeout(&result, output);
     }
 
-    printout(&result);
+    printout(&result, args.json);
 }
 
 #[cfg(test)]

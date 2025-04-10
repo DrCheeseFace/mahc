@@ -209,7 +209,7 @@ pub fn get_yaku(
 /// Calculate the payment amounts from the list of yaku.
 pub fn calculate_yaku_payment(
     yaku: &Vec<Yaku>,
-    fu: &Vec<Fu>,
+    fu: &[Fu],
     dora: &Option<Vec<Tile>>,
     hand: &Hand,
 ) -> Result<Payment, CalcErr> {
