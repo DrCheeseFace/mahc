@@ -1,6 +1,6 @@
 use crate::hand::error::HandErr;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone, Copy)]
 pub enum CalcErr {
     HandErr(HandErr),
     NoHandTiles,
