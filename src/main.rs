@@ -390,7 +390,9 @@ mod test {
     fn no_han_for_calc() {
         let args = Args::parse_from(["", "--manual", "0", "30", "--ba", "3"]);
         let out = parse_calculator(&args);
-        assert_eq!(out.unwrap_err(), CalcErr::NoHan);
+        assert_eq!(out.clone().unwrap_err(), CalcErr::NoHan);
+        let printout = json_err_out(out.unwrap_err());
+        assert_eq!(printout, ("{\"Error\":\"No Han provided!\"}".to_string()));
     }
 
     #[test]
