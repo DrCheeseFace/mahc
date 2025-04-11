@@ -145,7 +145,7 @@ impl Hand {
         }
 
         //meld fu cal
-        for tile_group in &self.triplets() {
+        for tile_group in self.triplets() {
             let group_is_terminal_or_honor = tile_group.is_honor() || tile_group.is_terminal();
 
             if tile_group == self.groups.last().unwrap() {
@@ -209,7 +209,7 @@ impl Hand {
                 GroupType::Pair => fu_types.push(Fu::SingleWait),
                 GroupType::Sequence => {
                     let mid_tile = group.tiles()[0].clone().next().unwrap();
-                    if self.win_tile() == mid_tile
+                    if *self.win_tile() == mid_tile
                         || !self.win_tile().is_terminal() && group.is_terminal()
                     {
                         fu_types.push(Fu::SingleWait);
@@ -310,42 +310,39 @@ impl Hand {
         count
     }
 
+    /// Get the groups in the hand.
+    pub fn groups(&self) -> Vec<&TileGroup> {
+        self.groups.iter().collect()
+    }
+
     /// Get the sequence groups in the hand.
-    pub fn sequences(&self) -> Vec<TileGroup> {
-        // TODO: We can do better than cloning into `into_iter()`.
+    pub fn sequences(&self) -> Vec<&TileGroup> {
         self.groups
-            .clone()
-            .into_iter()
+            .iter()
             .filter(|group| matches!(group.group_type(), GroupType::Sequence))
             .collect()
     }
 
     /// Get the triplet groups in the hand.
-    pub fn triplets(&self) -> Vec<TileGroup> {
-        // TODO: We can do better than cloning into `into_iter()`.
+    pub fn triplets(&self) -> Vec<&TileGroup> {
         self.groups
-            .clone()
-            .into_iter()
+            .iter()
             .filter(|group| matches!(group.group_type(), GroupType::Triplet))
             .collect()
     }
 
     /// Get the kan groups in the hand.
-    pub fn kans(&self) -> Vec<TileGroup> {
-        // TODO: We can do better than cloning into `into_iter()`.
+    pub fn kans(&self) -> Vec<&TileGroup> {
         self.groups
-            .clone()
-            .into_iter()
+            .iter()
             .filter(|group| matches!(group.group_type(), GroupType::Kan))
             .collect()
     }
 
     /// Get the pair groups in the hand.
-    pub fn pairs(&self) -> Vec<TileGroup> {
-        // TODO: We can do better than cloning into `into_iter()`.
+    pub fn pairs(&self) -> Vec<&TileGroup> {
         self.groups
-            .clone()
-            .into_iter()
+            .iter()
             .filter(|group| matches!(group.group_type(), GroupType::Pair))
             .collect()
     }
@@ -353,28 +350,26 @@ impl Hand {
     /// Get the groups with no shape in the hand.
     ///
     /// This can be used to check for kokushi musou (thirteen orphans).
-    pub fn singles(&self) -> Vec<TileGroup> {
-        // TODO: We can do better than cloning into `into_iter()`.
+    pub fn singles(&self) -> Vec<&TileGroup> {
         self.groups
-            .clone()
-            .into_iter()
+            .iter()
             .filter(|group| matches!(group.group_type(), GroupType::None))
             .collect()
     }
 
     /// Get the winning tile the completes the hand.
-    pub fn win_tile(&self) -> Tile {
-        self.win_tile.clone()
+    pub fn win_tile(&self) -> &Tile {
+        &self.win_tile
     }
 
     /// Get the seat wind.
-    pub fn seat_tile(&self) -> Tile {
-        self.seat_tile.clone()
+    pub fn seat_tile(&self) -> &Tile {
+        &self.seat_tile
     }
 
     /// Get the prevalent wind.
-    pub fn prev_tile(&self) -> Tile {
-        self.prev_tile.clone()
+    pub fn prev_tile(&self) -> &Tile {
+        &self.prev_tile
     }
 
     /// Get the state of whether or not the hand has been opened.
@@ -397,7 +392,7 @@ impl Hand {
             return false;
         }
 
-        let mut seqs: Vec<TileGroup> = self.sequences();
+        let mut seqs: Vec<&TileGroup> = self.sequences();
 
         if seqs.len() != 4 {
             return false;
@@ -419,10 +414,10 @@ impl Hand {
             return false;
         }
 
-        let mut seqs: Vec<TileGroup> = self.sequences();
+        let mut seqs: Vec<&TileGroup> = self.sequences();
         seqs.sort();
 
-        let mut seqs_dedup: Vec<TileGroup> = seqs.clone();
+        let mut seqs_dedup: Vec<&TileGroup> = seqs.clone();
         seqs_dedup.dedup();
 
         match seqs.len() - seqs_dedup.len() {
@@ -967,7 +962,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_tenhou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile() == Tile::Wind(WValue::East) {
+        if tenhou && *self.seat_tile() == Tile::Wind(WValue::East) {
             return true;
         }
         false
@@ -977,7 +972,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_chiihou(&self, tenhou: bool) -> bool {
-        if tenhou && self.seat_tile() == Tile::Wind(WValue::East) {
+        if tenhou && *self.seat_tile() == Tile::Wind(WValue::East) {
             return true;
         }
         false
