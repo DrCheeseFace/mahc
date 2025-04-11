@@ -1,6 +1,6 @@
 [package]
 name = "mahc"
-version = "1.13.0"      
+version = "1.14.0"      
 edition = "2021"
 authors =[  "Tharun <tharun1@hotmail.co.uk>" ]
 description = "riichi mahjong calculator library and CLI"
