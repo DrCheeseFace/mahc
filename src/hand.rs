@@ -608,9 +608,9 @@ impl Hand {
                 .map(|x| x.value().to_string())
                 .collect::<_>();
 
-            values.contains(&"1".to_string())
-                && values.contains(&"4".to_string())
-                && values.contains(&"7".to_string())
+            values.contains(&ONE_VALUE.to_string())
+                && values.contains(&FOUR_VALUE.to_string())
+                && values.contains(&SEVEN_VALUE.to_string())
         })
     }
 
