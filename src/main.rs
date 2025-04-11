@@ -95,7 +95,7 @@ pub struct Args {
     emoji: bool,
 }
 
-pub fn parse_calculator(args: &Args) -> Result<String, CalcErr> {
+fn parse_calculator(args: &Args) -> Result<String, CalcErr> {
     let honba = args.ba;
     let han: HanValue = args.manual.as_ref().unwrap()[0];
     let fu: FuValue = args.manual.as_ref().unwrap()[1].into();
@@ -108,7 +108,7 @@ pub fn parse_calculator(args: &Args) -> Result<String, CalcErr> {
     }
 }
 
-pub fn parse_hand(args: &Args) -> Result<String, CalcErr> {
+fn parse_hand(args: &Args) -> Result<String, CalcErr> {
     if args.tiles.is_none() {
         return Err(CalcErr::NoHandTiles);
     }
@@ -156,7 +156,7 @@ pub fn parse_hand(args: &Args) -> Result<String, CalcErr> {
     Ok(printout)
 }
 
-pub fn json_calc_out(payment: &Payment, honba: HonbaCounter, han: HanValue, fu: FuValue) -> String {
+fn json_calc_out(payment: &Payment, honba: HonbaCounter, han: HanValue, fu: FuValue) -> String {
     let out = json!({
     "han" : han,
     "fu" : fu,
@@ -178,12 +178,7 @@ pub fn json_calc_out(payment: &Payment, honba: HonbaCounter, han: HanValue, fu: 
     out.to_string()
 }
 
-pub fn default_calc_out(
-    payment: &Payment,
-    honba: HonbaCounter,
-    han: HanValue,
-    fu: FuValue,
-) -> String {
+fn default_calc_out(payment: &Payment, honba: HonbaCounter, han: HanValue, fu: FuValue) -> String {
     let honba_str = if honba != 0 {
         format!("/ {honba} Honba")
     } else {
@@ -207,7 +202,7 @@ pub fn default_calc_out(
     )
 }
 
-pub fn json_hand_out(score: &Score) -> String {
+fn json_hand_out(score: &Score) -> String {
     let out = json!({
         "han" : score.han(),
         "fu" : score.fu_score(),
@@ -232,14 +227,14 @@ pub fn json_hand_out(score: &Score) -> String {
     out.to_string()
 }
 
-pub fn json_err_out(err: CalcErr) -> String {
+fn json_err_out(err: CalcErr) -> String {
     let out = json!({
         "Error" : err.to_string()
     });
     out.to_string()
 }
 
-pub fn default_hand_out(score: &Score, hand: &Hand, emoji_out: bool) -> String {
+fn default_hand_out(score: &Score, hand: &Hand, emoji_out: bool) -> String {
     let mut out: String = String::new();
     out.push('\n');
     if emoji_out {
@@ -297,7 +292,7 @@ pub fn default_hand_out(score: &Score, hand: &Hand, emoji_out: bool) -> String {
     out
 }
 
-pub fn parse_file(args: &Args) {
+fn parse_file(args: &Args) {
     let file_contents = match fs::read_to_string(args.file.as_ref().unwrap()) {
         Ok(contents) => contents,
         Err(_) => {
@@ -331,7 +326,7 @@ pub fn parse_file(args: &Args) {
     }
 }
 
-pub fn printout(result: &Result<String, CalcErr>, json: bool) {
+fn printout(result: &Result<String, CalcErr>, json: bool) {
     match result {
         Ok(o) => {
             println!("{}", o);
@@ -346,7 +341,7 @@ pub fn printout(result: &Result<String, CalcErr>, json: bool) {
     }
 }
 
-pub fn writeout(result: &Result<String, CalcErr>, output: &str) {
+fn writeout(result: &Result<String, CalcErr>, output: &str) {
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
