@@ -194,12 +194,12 @@ impl TileGroup {
 
     /// Get Suit
     pub fn suit(&self) -> Suit {
-        self.tiles[0].suit().clone()
+        self.tiles[0].suit()
     }
 
     /// Get tiles
-    pub fn tiles(&self) -> Vec<Tile> {
-        self.tiles.clone()
+    pub fn tiles(&self) -> Vec<&Tile> {
+        self.tiles.iter().collect()
     }
 
     /// Get open status
@@ -209,7 +209,7 @@ impl TileGroup {
 
     // Get group type
     pub fn group_type(&self) -> GroupType {
-        self.group_type.clone()
+        self.group_type
     }
 
     /// get emoji format for tile group
@@ -240,7 +240,7 @@ impl TileGroup {
 
 //AHAHAHAHAHAHAHAH I DONT NEED THIS
 //turns our i did need this :)
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
 pub enum GroupType {
     Sequence,
     Triplet,

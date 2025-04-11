@@ -195,8 +195,8 @@ impl Hand {
         }
 
         for pair in self.pairs() {
-            if pair.tiles()[0] == self.prev_tile
-                || pair.tiles()[0] == self.seat_tile
+            if *pair.tiles()[0] == self.prev_tile
+                || *pair.tiles()[0] == self.seat_tile
                 || pair.tiles()[0].suit() == Suit::Dragon
             {
                 fu_types.push(Fu::Toitsu);
@@ -285,23 +285,23 @@ impl Hand {
         for tile in dora_indicator_tiles.clone().unwrap() {
             let dora_tile = tile.clone().next().unwrap();
             for triplet in self.triplets() {
-                if triplet.tiles()[0] == dora_tile {
+                if *triplet.tiles()[0] == dora_tile {
                     count += 3;
                 }
             }
             for kan in self.kans() {
-                if kan.tiles()[0] == dora_tile {
+                if *kan.tiles()[0] == dora_tile {
                     count += 4;
                 }
             }
             for pair in self.pairs() {
-                if pair.tiles()[0] == dora_tile {
+                if *pair.tiles()[0] == dora_tile {
                     count += 2;
                 }
             }
             for sequence in self.sequences() {
                 for tile in sequence.tiles() {
-                    if tile == dora_tile {
+                    if *tile == dora_tile {
                         count += 1
                     }
                 }
@@ -943,7 +943,7 @@ impl Hand {
         ];
 
         for tile in self.groups.iter() {
-            if let Some(pos) = orphans.iter().position(|orphan| orphan == &tile.tiles()[0]) {
+            if let Some(pos) = orphans.iter().position(|orphan| orphan == tile.tiles()[0]) {
                 orphans.remove(pos);
             } else {
                 return false;
