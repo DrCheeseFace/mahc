@@ -328,14 +328,13 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
 
     let mut tile_counts: HashMap<Tile, u8> = HashMap::new();
     for tile in tiles {
-        if let Some(x) = tile_counts.get_mut(tile) {
-            *x += 1
-        } else {
-            tile_counts.insert(*tile, 0);
-        }
+        tile_counts
+            .entry(tile.clone())
+            .and_modify(|x| *x += 1)
+            .or_insert(0);
     }
 
-    // TODO good lord all might
+    // TODO good lord all mighty
     let mut hand_combos: Vec<Vec<TileGroup>> = Vec::new();
     let all_melds = get_melds_from_tile_counts(&tile_counts);
     for pair in pairs {
@@ -352,30 +351,23 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
                         ];
                         combined_melds.sort();
                         if !hand_combos.contains(&combined_melds) {
-                            hand_combos.push(combined_melds);
+                            hand_combos.push(combined_melds.clone());
+
+                            let mut hand_tile_counts: HashMap<Tile, u8> = HashMap::new();
+                            for tile in combined_melds.iter().flat_map(|m| m.tiles()) {
+                                hand_tile_counts
+                                    .entry(tile.clone())
+                                    .and_modify(|x| *x += 1)
+                                    .or_insert(0);
+                            }
+
+                            if hand_tile_counts == tile_counts {
+                                hands.push(combined_melds);
+                            }
                         }
                     }
                 }
             }
-        }
-    }
-
-    for hand_combo in hand_combos.iter_mut() {
-        let mut tiles: Vec<&Tile> = Vec::new();
-        for hand_combo_tile_group in hand_combo.iter() {
-            tiles = [tiles, hand_combo_tile_group.tiles()].concat();
-        }
-        let mut temp_hash: HashMap<Tile, u8> = HashMap::new();
-        for tile in tiles.clone() {
-            match temp_hash.get_mut(&tile) {
-                Some(x) => *x += 1,
-                None => {
-                    temp_hash.insert(tile.clone(), 0);
-                }
-            }
-        }
-        if tile_counts == temp_hash {
-            hands.push(hand_combo.to_vec());
         }
     }
 

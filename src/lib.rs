@@ -52,6 +52,7 @@ fn get_kans(tiles: &[Tile]) -> Vec<TileGroup> {
     kans
 }
 
+// assumes valid max number of tiles
 fn get_triplets(tiles: &[Tile]) -> Vec<TileGroup> {
     let mut trips: Vec<TileGroup> = Vec::new();
     for target_tile in tiles.iter() {
@@ -68,6 +69,7 @@ fn get_triplets(tiles: &[Tile]) -> Vec<TileGroup> {
     trips
 }
 
+// assumes valid max number of tiles
 fn get_sequences(tiles: &[Tile]) -> Vec<TileGroup> {
     let tiles: Vec<Tile> = tiles
         .iter()
@@ -89,6 +91,7 @@ fn get_sequences(tiles: &[Tile]) -> Vec<TileGroup> {
     sequences
 }
 
+// assumes valid max number of tiles
 fn get_singles(tiles: &[Tile]) -> Vec<TileGroup> {
     let mut singles: Vec<TileGroup> = Vec::new();
     for tile in tiles {
@@ -100,6 +103,7 @@ fn get_singles(tiles: &[Tile]) -> Vec<TileGroup> {
     singles
 }
 
+// assumes valid max number of tiles
 fn get_pairs(tiles: &Vec<Tile>) -> Vec<TileGroup> {
     let mut pairs: Vec<TileGroup> = Vec::new();
     let mut counts = std::collections::HashMap::new();
