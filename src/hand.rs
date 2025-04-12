@@ -709,7 +709,7 @@ impl Hand {
             .triplets()
             .iter()
             .chain(self.kans().iter())
-            .map(|x| x.tiles()[0].clone())
+            .map(|x| *x.tiles()[0])
             .collect();
 
         trips.contains(&Tile::Dragon(DValue::Red))

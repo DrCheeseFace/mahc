@@ -61,30 +61,30 @@ impl TryFrom<String> for TileGroup {
                 for i in 0..3 {
                     let value = group.chars().nth(i).unwrap();
                     let tile = Tile::new(value, &suit)?;
-                    tiles.push(tile.clone());
+                    tiles.push(tile);
                 }
             }
             GroupType::Triplet => {
                 for i in 0..3 {
                     let value = group.chars().nth(i).unwrap();
                     let tile = Tile::new(value, &suit)?;
-                    tiles.push(tile.clone());
+                    tiles.push(tile);
                 }
             }
             GroupType::Kan => {
                 for i in 0..4 {
                     let value = group.chars().nth(i).unwrap();
                     let tile = Tile::new(value, &suit)?;
-                    tiles.push(tile.clone());
+                    tiles.push(tile);
                 }
             }
             GroupType::Pair => {
-                tiles.push(tile.clone());
+                tiles.push(tile);
                 let value = group.chars().nth(1).unwrap();
                 let tile = Tile::new(value, &suit)?;
-                tiles.push(tile.clone());
+                tiles.push(tile);
             }
-            GroupType::None => tiles.push(tile.clone()),
+            GroupType::None => tiles.push(tile),
         }
 
         TileGroup::new(tiles, isopen)
@@ -149,9 +149,12 @@ impl TileGroup {
             }
             GroupType::Sequence => {
                 for i in 0..2 {
-                    let mut next_tile = tiles[i].clone();
+                    if tiles[i].is_honor() {
+                        return Err(HandErr::InvalidGroup);
+                    }
+                    let mut next_tile = tiles[i];
                     next_tile.next();
-                    if tiles[i + 1].value() != next_tile.value() {
+                    if tiles[i + 1].value() != next_tile.value() || next_tile.value() == ONE_VALUE {
                         return Err(HandErr::InvalidGroup);
                     }
                 }
@@ -799,6 +802,22 @@ mod tests {
         ];
         let tiles = TileGroup::new(group, false).unwrap();
         assert_eq!(tiles.group_type, GroupType::Sequence);
+
+        let group = vec![
+            "Ew".to_string().try_into().unwrap(),
+            "Sw".to_string().try_into().unwrap(),
+            "Ww".to_string().try_into().unwrap(),
+        ];
+        let tiles = TileGroup::new(group, false).unwrap_err();
+        assert_eq!(tiles, HandErr::InvalidGroup);
+
+        let group = vec![
+            "8m".to_string().try_into().unwrap(),
+            "9m".to_string().try_into().unwrap(),
+            "1m".to_string().try_into().unwrap(),
+        ];
+        let tiles = TileGroup::new(group, false).unwrap_err();
+        assert_eq!(tiles, HandErr::InvalidGroup);
     }
 
     #[test]
