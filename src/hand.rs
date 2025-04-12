@@ -1332,7 +1332,7 @@ mod tests {
     }
 
     #[test]
-    fn yaku_cuurenpoutou() {
+    fn yaku_chuurenpoutou() {
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),

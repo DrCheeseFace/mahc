@@ -334,7 +334,7 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
             .or_insert(0);
     }
 
-    // TODO good lord all mighty
+    // TODO good lord all mighty this can be optimised ALOT
     let mut hand_combos: Vec<Vec<TileGroup>> = Vec::new();
     let all_melds = get_melds_from_tile_counts(&tile_counts);
     for pair in pairs {
@@ -931,13 +931,14 @@ mod tests {
     }
 
     #[test]
-    fn get_valid_hand_shapes_chitoi_normal() {
+    fn get_valid_hand_shapes_extra_tiles() {
         let one_sou: Tile = "1s".to_string().try_into().unwrap();
         let two_sou: Tile = "2s".to_string().try_into().unwrap();
         let three_sou: Tile = "3s".to_string().try_into().unwrap();
         let four_sou: Tile = "4s".to_string().try_into().unwrap();
         let five_sou: Tile = "5s".to_string().try_into().unwrap();
         let six_sou: Tile = "6s".to_string().try_into().unwrap();
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap();
 
         let tiles: Vec<Tile> = vec![
             one_sou.clone(),
@@ -952,9 +953,32 @@ mod tests {
             five_sou.clone(),
             six_sou.clone(),
             six_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
         ];
         let hand_shapes = get_valid_hand_shapes(&tiles);
-        // assert_eq!(hand_shapes.len(), 2);
-        // TODO MORE TEST CASES
+        assert_eq!(hand_shapes.len(), 0);
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            four_sou.clone(),
+            five_sou.clone(),
+            six_sou.clone(),
+            six_sou.clone(),
+            six_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            four_sou.clone(),
+            four_sou.clone(),
+            four_sou.clone(),
+        ];
+
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 0);
     }
 }
