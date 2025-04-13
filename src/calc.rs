@@ -1,12 +1,11 @@
 pub mod error;
+mod utils;
 
-use crate::*;
-use std::collections::HashMap;
-
-use error::CalcErr;
-use hand::validate_hand_shape;
-
+use crate::calc::utils::{
+    get_kans, get_melds_from_tile_counts, get_pairs, get_singles, get_triplets,
+};
 use crate::fu::{calculate_total_fu_value, Fu};
+use crate::hand::validate_hand_shape;
 use crate::hand::Hand;
 use crate::limit_hand::LimitHands;
 use crate::payment::Payment;
@@ -14,7 +13,8 @@ use crate::score::{FuValue, HanValue, HonbaCounter, Score};
 use crate::tile::Tile;
 use crate::tile_group::TileGroup;
 use crate::yaku::Yaku;
-use crate::{get_pairs, get_triplets};
+use error::CalcErr;
+use std::collections::HashMap;
 
 /// Get the score breakdown of the hand.
 pub fn get_hand_score(
@@ -329,7 +329,7 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
     let mut tile_counts: HashMap<Tile, u8> = HashMap::new();
     for tile in tiles {
         tile_counts
-            .entry(tile.clone())
+            .entry(*tile)
             .and_modify(|x| *x += 1)
             .or_insert(0);
     }
@@ -338,10 +338,10 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
     let mut hand_combos: Vec<Vec<TileGroup>> = Vec::new();
     let all_melds = get_melds_from_tile_counts(&tile_counts);
     for pair in pairs {
-        for meld_1 in all_melds.iter() {
-            for meld_2 in all_melds.iter() {
-                for meld_3 in all_melds.iter() {
-                    for meld_4 in all_melds.iter() {
+        for meld_1 in &all_melds {
+            for meld_2 in &all_melds {
+                for meld_3 in &all_melds {
+                    for meld_4 in &all_melds {
                         let mut combined_melds = vec![
                             meld_1.clone(),
                             meld_2.clone(),
@@ -356,7 +356,7 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
                             let mut hand_tile_counts: HashMap<Tile, u8> = HashMap::new();
                             for tile in combined_melds.iter().flat_map(|m| m.tiles()) {
                                 hand_tile_counts
-                                    .entry(tile.clone())
+                                    .entry(*tile)
                                     .and_modify(|x| *x += 1)
                                     .or_insert(0);
                             }
@@ -378,8 +378,9 @@ pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
 mod tests {
     use crate::{
         calc::{
-            error::CalcErr, get_hand_score, get_pairs, get_sequences, get_singles, get_triplets,
-            get_valid_hand_shapes,
+            error::CalcErr,
+            get_hand_score, get_valid_hand_shapes,
+            utils::{get_pairs, get_sequences, get_singles, get_triplets},
         },
         hand::Hand,
         tile::{MpsValue, Tile},

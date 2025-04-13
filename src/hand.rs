@@ -1019,7 +1019,7 @@ pub fn validate_hand_shape(groups: &Vec<TileGroup>) -> Option<HandErr> {
 #[cfg(test)]
 mod tests {
     use super::Hand;
-    use crate::hand::error::HandErr;
+    use crate::{calc::get_valid_hand_shapes, hand::error::HandErr};
 
     #[test]
     fn yaku_kokushi() {
@@ -1090,6 +1090,14 @@ mod tests {
         .unwrap();
         assert!(out.is_kokushi());
         assert!(out.is_kokushi13sided());
+        let tiles: Vec<_> = out
+            .groups()
+            .iter()
+            .flat_map(|m| m.tiles())
+            .map(|t| *t)
+            .collect();
+        assert_eq!(get_valid_hand_shapes(&tiles).len(), 1);
+
         let out = Hand::new_from_strings(
             vec![
                 "1s".to_string(),
@@ -1153,6 +1161,13 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_daisuushii());
+        let tiles: Vec<_> = out
+            .groups()
+            .iter()
+            .flat_map(|m| m.tiles())
+            .map(|t| *t)
+            .collect();
+        assert_eq!(get_valid_hand_shapes(&tiles).len(), 1);
         let out = Hand::new_from_strings(
             vec![
                 "EEEEw".to_string(),
@@ -1231,6 +1246,14 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_suukantsu());
+        let tiles: Vec<_> = out
+            .groups()
+            .iter()
+            .flat_map(|m| m.tiles())
+            .map(|t| *t)
+            .collect();
+        assert_eq!(get_valid_hand_shapes(&tiles).len(), 1);
+
         let out = Hand::new_from_strings(
             vec![
                 "EEEw".to_string(),
