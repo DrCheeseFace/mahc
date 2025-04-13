@@ -3,12 +3,13 @@ use std::fs::{self, OpenOptions};
 use std::io::Write;
 
 use clap::Parser;
-use mahc::calc;
 use mahc::calc::error::CalcErr;
+use mahc::calc::{self, get_valid_hand_shapes};
 use mahc::hand::Hand;
 use mahc::payment::Payment;
 use mahc::score::{FuValue, HanValue, HonbaCounter, Score};
 use mahc::tile::Tile;
+use mahc::tile_group::TileGroup;
 use serde_json::json;
 
 /// riichi mahjong calculator tool
@@ -93,6 +94,10 @@ pub struct Args {
     /// on your terminal emulator)
     #[arg(long, default_value_t = false)]
     emoji: bool,
+
+    /// returns possible hand shaped from given tiles
+    #[arg(long, default_value_t = false)]
+    analyse_tiles: bool,
 }
 
 fn parse_calculator(args: &Args) -> Result<String, CalcErr> {
@@ -105,6 +110,28 @@ fn parse_calculator(args: &Args) -> Result<String, CalcErr> {
         Ok(json_calc_out(&payment, honba, han, fu))
     } else {
         Ok(default_calc_out(&payment, honba, han, fu))
+    }
+}
+
+fn analyse_tiles(args: &Args) -> Result<String, CalcErr> {
+    if args.tiles.is_none() {
+        return Err(CalcErr::NoHandTiles);
+    }
+
+    let mut tiles: Vec<Tile> = Vec::new();
+    for tile_string in args.tiles.clone().unwrap() {
+        let tile: Tile = tile_string.try_into().map_err(CalcErr::HandErr)?; // wtf
+        tiles.push(tile)
+    }
+    let tile_groups = get_valid_hand_shapes(&tiles);
+    if tile_groups.is_empty() {
+        return Err(CalcErr::NoHandshapesFound);
+    }
+
+    if args.json {
+        Ok(json_analyse_out(tile_groups))
+    } else {
+        Ok(default_analyse_out(tile_groups))
     }
 }
 
@@ -224,6 +251,40 @@ fn json_hand_out(score: &Score) -> String {
             }
         }
     });
+    out.to_string()
+}
+
+fn default_analyse_out(shapes: Vec<Vec<TileGroup>>) -> String {
+    let mut out: String = String::new();
+    out.push_str("\nHandshapes found");
+    out.push('\n');
+    for shape in &shapes {
+        let shape_string: String = shape
+            .iter()
+            .map(|tilegroup| [tilegroup.to_string(), " ".to_string()].concat())
+            .collect::<String>();
+        out.push_str(shape_string.as_str());
+        out.push('\n');
+    }
+    out
+}
+
+fn json_analyse_out(shapes: Vec<Vec<TileGroup>>) -> String {
+    let mut shapes_out: Vec<String> = Vec::new();
+    for shape in &shapes {
+        shapes_out.push(
+            shape
+                .iter()
+                .map(|tilegroup| [tilegroup.to_string(), " ".to_string()].concat())
+                .collect::<String>(),
+        )
+    }
+
+    //TODO change this for more detailed tile info perhaps impl serde serialise to tilegroup
+    let out = json!({
+        "hands" : shapes_out
+    });
+
     out.to_string()
 }
 
@@ -366,6 +427,8 @@ fn main() {
         return;
     } else if args.manual.is_some() {
         parse_calculator(&args)
+    } else if args.analyse_tiles {
+        analyse_tiles(&args)
     } else {
         parse_hand(&args)
     };
@@ -521,6 +584,63 @@ mod test {
             out.unwrap(),
             ("\n13 Han/ 70 Fu/ 3 Honba\nDealer: 48900 (16300)\nnon-dealer: 32900 (8300/16300)"
                 .to_string())
+        );
+    }
+    #[test]
+    fn analyse_tiles_out() {
+        let args = Args::parse_from([
+            "",
+            "--tiles",
+            "1p",
+            "1p",
+            "1p",
+            "2p",
+            "2p",
+            "2p",
+            "3p",
+            "3p",
+            "3p",
+            "rd",
+            "rd",
+            "rd",
+            "Ew",
+            "Ew",
+            "-w",
+            "Ew",
+            "--analyse-tiles",
+        ]);
+        let out = analyse_tiles(&args);
+        assert_eq!(
+            out.unwrap(),
+            ("\nHandshapes found\n111p 222p 333p EEw rrrd \n123p 123p 123p EEw rrrd \n"
+                .to_string())
+        );
+        let args = Args::parse_from([
+            "",
+            "--tiles",
+            "1p",
+            "1p",
+            "1p",
+            "2p",
+            "2p",
+            "2p",
+            "3p",
+            "3p",
+            "3p",
+            "rd",
+            "rd",
+            "rd",
+            "Ew",
+            "Ew",
+            "-w",
+            "Ew",
+            "--analyse-tiles",
+            "--json",
+        ]);
+        let out = analyse_tiles(&args);
+        assert_eq!(
+            out.unwrap(),
+            ("{\"hands\":[\"111p 222p 333p EEw rrrd \",\"123p 123p 123p EEw rrrd \"]}".to_string())
         );
     }
 }
