@@ -1,4 +1,6 @@
 pub mod error;
+use std::collections::HashSet;
+
 use crate::fu::Fu;
 use crate::suit::Suit;
 use crate::tile::*;
@@ -35,31 +37,23 @@ impl Hand {
         seat_tile: Tile,
         prev_tile: Tile,
     ) -> Result<Self, HandErr> {
-        //TODO: standard hand ONLY CHECK MUST FIX FOR KOKUSHI
-        let mut full_shape_count = 0;
-        let mut pair_count = 0;
-        let mut no_shape_count = 0;
-        let mut isopen = false;
-
-        for group in &groups {
-            match group.group_type() {
-                GroupType::Triplet | GroupType::Sequence | GroupType::Kan => full_shape_count += 1,
-                GroupType::Pair => pair_count += 1,
-                GroupType::None => no_shape_count += 1,
-            }
-            if group.isopen() {
-                isopen = true;
-            }
+        if let Some(x) = validate_hand_shape(&groups) {
+            return Err(x);
         }
+        let isopen = groups.iter().filter(|g| g.isopen()).count() != 0;
 
-        if !(full_shape_count == 4 && pair_count == 1)
-            && pair_count != 7
-            && !(no_shape_count == 12 && pair_count == 1)
-        {
-            return Err(HandErr::InvalidShape);
-        }
         // check if last group contains the winning tile
         // FUCK handling kokuushi
+        let mut pair_count = 0;
+        let mut no_shape_count = 0;
+        for group in groups.iter() {
+            match group.group_type() {
+                GroupType::Pair => pair_count += 1,
+                GroupType::None => no_shape_count += 1,
+                _ => {}
+            }
+        }
+
         let tilecount: u8 = groups.iter().map(|s| s.group_type().tile_count()).sum();
         if tilecount == 14 {
             let last_group = groups.last().unwrap();
@@ -106,6 +100,7 @@ impl Hand {
             isopen,
         })
     }
+
     pub fn new_from_strings(
         tiles: Vec<String>,
         win: String,
@@ -991,10 +986,40 @@ impl Hand {
     }
 }
 
+pub fn validate_hand_shape(groups: &Vec<TileGroup>) -> Option<HandErr> {
+    let mut full_shape_count = 0;
+    let mut pair_count = 0;
+    let mut no_shape_count = 0;
+
+    for group in groups {
+        match group.group_type() {
+            GroupType::Triplet | GroupType::Sequence | GroupType::Kan => full_shape_count += 1,
+            GroupType::Pair => pair_count += 1,
+            GroupType::None => no_shape_count += 1,
+        }
+    }
+
+    let mut duplicate_group = false;
+    let mut group_set = HashSet::new();
+    for group in groups.iter() {
+        if !group_set.insert(group) {
+            duplicate_group = true
+        }
+    }
+
+    if !(full_shape_count == 4 && pair_count == 1
+        || pair_count == 7 && !duplicate_group
+        || pair_count == 1 && no_shape_count == 12)
+    {
+        return Some(HandErr::InvalidShape);
+    }
+    None
+}
+
 #[cfg(test)]
 mod tests {
     use super::Hand;
-    use crate::hand::error::HandErr;
+    use crate::{calc::get_valid_hand_shapes, hand::error::HandErr};
 
     #[test]
     fn yaku_kokushi() {
@@ -1065,6 +1090,14 @@ mod tests {
         .unwrap();
         assert!(out.is_kokushi());
         assert!(out.is_kokushi13sided());
+        let tiles: Vec<_> = out
+            .groups()
+            .iter()
+            .flat_map(|m| m.tiles())
+            .map(|t| *t)
+            .collect();
+        assert_eq!(get_valid_hand_shapes(&tiles).len(), 1);
+
         let out = Hand::new_from_strings(
             vec![
                 "1s".to_string(),
@@ -1128,6 +1161,13 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_daisuushii());
+        let tiles: Vec<_> = out
+            .groups()
+            .iter()
+            .flat_map(|m| m.tiles())
+            .map(|t| *t)
+            .collect();
+        assert_eq!(get_valid_hand_shapes(&tiles).len(), 1);
         let out = Hand::new_from_strings(
             vec![
                 "EEEEw".to_string(),
@@ -1206,6 +1246,14 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_suukantsu());
+        let tiles: Vec<_> = out
+            .groups()
+            .iter()
+            .flat_map(|m| m.tiles())
+            .map(|t| *t)
+            .collect();
+        assert_eq!(get_valid_hand_shapes(&tiles).len(), 1);
+
         let out = Hand::new_from_strings(
             vec![
                 "EEEw".to_string(),
@@ -1238,8 +1286,26 @@ mod tests {
             "Ew".to_string(),
             "Ww".to_string(),
         )
+        .unwrap_err();
+        assert_eq!(out, HandErr::InvalidShape);
+
+        let out = Hand::new_from_strings(
+            vec![
+                "EEw".to_string(),
+                "SSw".to_string(),
+                "WWw".to_string(),
+                "NNw".to_string(),
+                "rrd".to_string(),
+                "wwd".to_string(),
+                "ggd".to_string(),
+            ],
+            "gd".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
         .unwrap();
         assert!(out.is_daichiishin());
+
         let out = Hand::new_from_strings(
             vec![
                 "WWw".to_string(),
@@ -1289,7 +1355,7 @@ mod tests {
     }
 
     #[test]
-    fn yaku_cuurenpoutou() {
+    fn yaku_chuurenpoutou() {
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1834,6 +1900,23 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chiitoitsu());
+
+        let out = Hand::new_from_strings(
+            vec![
+                "11s".to_string(),
+                "22s".to_string(),
+                "33s".to_string(),
+                "44s".to_string(),
+                "rrd".to_string(),
+                "EEw".to_string(),
+                "11s".to_string(),
+            ],
+            "1s".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap_err();
+        assert_eq!(out, HandErr::InvalidShape);
     }
 
     #[test]

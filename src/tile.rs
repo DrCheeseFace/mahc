@@ -1,7 +1,7 @@
 use crate::suit::*;
 use crate::{hand::error::HandErr, suit::Suit};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum Tile {
     Man(MpsValue),
     Pin(MpsValue),
@@ -10,7 +10,7 @@ pub enum Tile {
     Dragon(DValue),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum MpsValue {
     One,
     Two,
@@ -24,7 +24,7 @@ pub enum MpsValue {
     Nine,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum WValue {
     East,
     South,
@@ -32,7 +32,7 @@ pub enum WValue {
     North,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum DValue {
     Red,
     Green,
@@ -111,6 +111,7 @@ impl std::fmt::Display for Tile {
 impl Iterator for Tile {
     type Item = Tile;
 
+    /// safe unwrap
     fn next(&mut self) -> Option<Self::Item> {
         match self {
             Tile::Man(t) => {
@@ -452,6 +453,73 @@ impl Tile {
                 DValue::Green => "🀅",
                 DValue::White => "🀆",
             },
+        }
+    }
+
+    pub fn get_next(&self) -> Tile {
+        match self {
+            Tile::Man(t) => {
+                let next_t = match t {
+                    MpsValue::One => MpsValue::Two,
+                    MpsValue::Two => MpsValue::Three,
+                    MpsValue::Three => MpsValue::Four,
+                    MpsValue::Four => MpsValue::Five,
+                    MpsValue::Five => MpsValue::Six,
+                    MpsValue::AkaFive => MpsValue::Six,
+                    MpsValue::Six => MpsValue::Seven,
+                    MpsValue::Seven => MpsValue::Eight,
+                    MpsValue::Eight => MpsValue::Nine,
+                    MpsValue::Nine => MpsValue::One,
+                };
+                Tile::Man(next_t)
+            }
+            Tile::Pin(t) => {
+                let next_t = match t {
+                    MpsValue::One => MpsValue::Two,
+                    MpsValue::Two => MpsValue::Three,
+                    MpsValue::Three => MpsValue::Four,
+                    MpsValue::Four => MpsValue::Five,
+                    MpsValue::Five => MpsValue::Six,
+                    MpsValue::AkaFive => MpsValue::Six,
+                    MpsValue::Six => MpsValue::Seven,
+                    MpsValue::Seven => MpsValue::Eight,
+                    MpsValue::Eight => MpsValue::Nine,
+                    MpsValue::Nine => MpsValue::One,
+                };
+                Tile::Pin(next_t)
+            }
+            Tile::Sou(t) => {
+                let next_t = match t {
+                    MpsValue::One => MpsValue::Two,
+                    MpsValue::Two => MpsValue::Three,
+                    MpsValue::Three => MpsValue::Four,
+                    MpsValue::Four => MpsValue::Five,
+                    MpsValue::Five => MpsValue::Six,
+                    MpsValue::AkaFive => MpsValue::Six,
+                    MpsValue::Six => MpsValue::Seven,
+                    MpsValue::Seven => MpsValue::Eight,
+                    MpsValue::Eight => MpsValue::Nine,
+                    MpsValue::Nine => MpsValue::One,
+                };
+                Tile::Sou(next_t)
+            }
+            Tile::Wind(t) => {
+                let next_t = match t {
+                    WValue::East => WValue::South,
+                    WValue::South => WValue::West,
+                    WValue::West => WValue::North,
+                    WValue::North => WValue::East,
+                };
+                Tile::Wind(next_t)
+            }
+            Tile::Dragon(t) => {
+                let next_t = match t {
+                    DValue::Red => DValue::White,
+                    DValue::White => DValue::Green,
+                    DValue::Green => DValue::Red,
+                };
+                Tile::Dragon(next_t)
+            }
         }
     }
 }

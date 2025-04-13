@@ -2,7 +2,7 @@ use crate::hand::error::HandErr;
 use crate::suit::{Suit, Z_SUIT_CHAR};
 use crate::{tile::*, VALID_SEQUENCE_VALUES};
 
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TileGroup {
     tiles: Vec<Tile>,
     isopen: bool,
@@ -243,7 +243,7 @@ impl TileGroup {
 
 //AHAHAHAHAHAHAHAH I DONT NEED THIS
 //turns our i did need this :)
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Copy)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum GroupType {
     Sequence,
     Triplet,

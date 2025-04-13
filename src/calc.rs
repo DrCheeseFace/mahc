@@ -1,14 +1,20 @@
 pub mod error;
+mod utils;
 
-use error::CalcErr;
-
+use crate::calc::utils::{
+    get_kans, get_melds_from_tile_counts, get_pairs, get_singles, get_triplets,
+};
 use crate::fu::{calculate_total_fu_value, Fu};
+use crate::hand::validate_hand_shape;
 use crate::hand::Hand;
 use crate::limit_hand::LimitHands;
 use crate::payment::Payment;
 use crate::score::{FuValue, HanValue, HonbaCounter, Score};
 use crate::tile::Tile;
+use crate::tile_group::TileGroup;
 use crate::yaku::Yaku;
+use error::CalcErr;
+use std::collections::HashMap;
 
 /// Get the score breakdown of the hand.
 pub fn get_hand_score(
@@ -299,15 +305,88 @@ pub fn validate_scoring_conditions(
     None
 }
 
+pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
+    let mut hands: Vec<Vec<TileGroup>> = Vec::new();
+    let pairs = get_pairs(tiles);
+    let trips = get_triplets(tiles);
+    let kans = get_kans(tiles);
+    let singles = get_singles(tiles);
+
+    // all hands require atleast 1 pair
+    if pairs.is_empty() {
+        return hands;
+    }
+
+    //kokushi chitoi check
+    if trips.is_empty() && kans.is_empty() {
+        let kokushi_chitoi: Vec<TileGroup> = [singles, trips, kans, pairs.clone()].concat();
+        match validate_hand_shape(&kokushi_chitoi) {
+            Some(_) => {}
+            None => hands.push(kokushi_chitoi),
+        }
+    }
+
+    let mut tile_counts: HashMap<Tile, u8> = HashMap::new();
+    for tile in tiles {
+        tile_counts
+            .entry(*tile)
+            .and_modify(|x| *x += 1)
+            .or_insert(0);
+    }
+
+    // TODO good lord all mighty this can be optimised ALOT
+    let mut hand_combos: Vec<Vec<TileGroup>> = Vec::new();
+    let all_melds = get_melds_from_tile_counts(&tile_counts);
+    for pair in pairs {
+        for meld_1 in &all_melds {
+            for meld_2 in &all_melds {
+                for meld_3 in &all_melds {
+                    for meld_4 in &all_melds {
+                        let mut combined_melds = vec![
+                            meld_1.clone(),
+                            meld_2.clone(),
+                            meld_3.clone(),
+                            meld_4.clone(),
+                            pair.clone(),
+                        ];
+                        combined_melds.sort();
+                        if !hand_combos.contains(&combined_melds) {
+                            hand_combos.push(combined_melds.clone());
+
+                            let mut hand_tile_counts: HashMap<Tile, u8> = HashMap::new();
+                            for tile in combined_melds.iter().flat_map(|m| m.tiles()) {
+                                hand_tile_counts
+                                    .entry(*tile)
+                                    .and_modify(|x| *x += 1)
+                                    .or_insert(0);
+                            }
+
+                            if hand_tile_counts == tile_counts {
+                                hands.push(combined_melds);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    hands
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        calc::{error::CalcErr, get_hand_score},
+        calc::{
+            error::CalcErr,
+            get_hand_score, get_valid_hand_shapes,
+            utils::{get_pairs, get_sequences, get_singles, get_triplets},
+        },
         hand::Hand,
-        tile::Tile,
+        tile::{MpsValue, Tile},
     };
 
-    use super::validate_scoring_conditions;
+    use super::{get_kans, validate_scoring_conditions};
 
     #[test]
     fn yakuman_scoring() {
@@ -575,5 +654,332 @@ mod tests {
             validate_scoring_conditions(&hand, false, false, true, false, true, false, true)
                 .unwrap();
         assert_eq!(CalcErr::DoubleRiichiHaiteiChankan, actual);
+    }
+
+    #[test]
+    fn hand_parser_get_kans() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap(); //4
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap(); //3
+        let east_wind: Tile = "Ew".to_string().try_into().unwrap(); //4
+        let nine_sou: Tile = "9s".to_string().try_into().unwrap(); //3
+        let west_wind: Tile = "Ww".to_string().try_into().unwrap(); //2
+        let tiles: Vec<Tile> = vec![
+            red_dragon.clone(),
+            east_wind.clone(),
+            west_wind.clone(),
+            west_wind.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            east_wind.clone(),
+            nine_sou.clone(),
+            one_sou.clone(),
+            red_dragon.clone(),
+            east_wind.clone(),
+            nine_sou.clone(),
+            east_wind.clone(),
+            nine_sou.clone(),
+            one_sou.clone(),
+            red_dragon.clone(),
+        ];
+        let kans = get_kans(&tiles);
+        assert_eq!(kans.len(), 2);
+    }
+
+    #[test]
+    fn hand_parser_get_trips() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap(); //4
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap(); //3
+        let east_wind: Tile = "Ew".to_string().try_into().unwrap(); //4
+        let nine_sou: Tile = "9s".to_string().try_into().unwrap(); //3
+        let west_wind: Tile = "Ww".to_string().try_into().unwrap(); //2
+        let tiles: Vec<Tile> = vec![
+            red_dragon.clone(),
+            east_wind.clone(),
+            west_wind.clone(),
+            west_wind.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            east_wind.clone(),
+            nine_sou.clone(),
+            one_sou.clone(),
+            red_dragon.clone(),
+            east_wind.clone(),
+            nine_sou.clone(),
+            east_wind.clone(),
+            nine_sou.clone(),
+            one_sou.clone(),
+            red_dragon.clone(),
+        ];
+        let trips = get_triplets(&tiles);
+        assert_eq!(trips.len(), 2);
+    }
+
+    #[test]
+    fn hand_parser_get_pairs() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap(); //4
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap(); //3
+        let east_wind: Tile = "Ew".to_string().try_into().unwrap(); //4
+        let nine_sou: Tile = "9s".to_string().try_into().unwrap(); //3
+        let west_wind: Tile = "Ww".to_string().try_into().unwrap(); //2
+        let tiles: Vec<Tile> = vec![
+            red_dragon.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            east_wind.clone(),
+            east_wind.clone(),
+            east_wind.clone(),
+            east_wind.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            nine_sou.clone(),
+            nine_sou.clone(),
+            nine_sou.clone(),
+            west_wind.clone(),
+            west_wind.clone(),
+        ];
+        let pairs = get_pairs(&tiles);
+        assert_eq!(pairs.len(), 7);
+    }
+
+    #[test]
+    fn hand_parser_get_seqs() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap(); //4
+        let two_sou: Tile = "2s".to_string().try_into().unwrap(); //3
+        let three_sou: Tile = "3s".to_string().try_into().unwrap(); //3
+        let nine_sou: Tile = "9s".to_string().try_into().unwrap(); //3
+        let eight_sou: Tile = "8s".to_string().try_into().unwrap(); //2
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            nine_sou.clone(),
+            nine_sou.clone(),
+            nine_sou.clone(),
+            eight_sou.clone(),
+            eight_sou.clone(),
+        ];
+        let seqs = get_sequences(&tiles);
+        assert_eq!(seqs.len(), 4);
+    }
+
+    #[test]
+    fn hand_parser_get_singles() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap(); //4
+        let two_sou: Tile = "2s".to_string().try_into().unwrap(); //3
+        let three_sou: Tile = "3s".to_string().try_into().unwrap(); //3
+        let nine_sou: Tile = "9s".to_string().try_into().unwrap(); //2
+        let eight_sou: Tile = "8s".to_string().try_into().unwrap(); //1
+        let tiles: Vec<Tile> = vec![
+            nine_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            eight_sou.clone(),
+            nine_sou.clone(),
+        ];
+        let singles = get_singles(&tiles);
+        assert_eq!(singles.len(), 1);
+    }
+
+    #[test]
+    fn hand_parser_get_valid_hand_shapes_chitoi() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap();
+        let two_sou: Tile = "2s".to_string().try_into().unwrap();
+        let three_sou: Tile = "3s".to_string().try_into().unwrap();
+        let nine_sou: Tile = "9s".to_string().try_into().unwrap();
+        let eight_sou: Tile = "8s".to_string().try_into().unwrap();
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap();
+        let east_wind: Tile = "Ew".to_string().try_into().unwrap();
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            nine_sou.clone(),
+            nine_sou.clone(),
+            eight_sou.clone(),
+            eight_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            east_wind.clone(),
+            east_wind.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 1);
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            nine_sou.clone(),
+            nine_sou.clone(),
+            eight_sou.clone(),
+            eight_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            east_wind.clone(),
+            east_wind.clone(),
+            east_wind.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 0);
+    }
+
+    #[test]
+    fn hand_parser_get_valid_hand_shapes_kokushi() {
+        let one_pin: Tile = Tile::Pin(MpsValue::One);
+        let nine_pin: Tile = Tile::Pin(MpsValue::Nine);
+        let one_man: Tile = Tile::Man(MpsValue::One);
+        let nine_man: Tile = Tile::Man(MpsValue::Nine);
+        let one_sou: Tile = Tile::Sou(MpsValue::One);
+        let nine_sou: Tile = Tile::Sou(MpsValue::Nine);
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap();
+        let green_dragon: Tile = "gd".to_string().try_into().unwrap();
+        let white_dragon: Tile = "wd".to_string().try_into().unwrap();
+        let east_wind: Tile = "Ew".to_string().try_into().unwrap();
+        let south_wind: Tile = "Sw".to_string().try_into().unwrap();
+        let west_wind: Tile = "Ww".to_string().try_into().unwrap();
+        let north_wind: Tile = "Nw".to_string().try_into().unwrap();
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            nine_sou.clone(),
+            one_man.clone(),
+            nine_man.clone(),
+            one_pin.clone(),
+            nine_pin.clone(),
+            red_dragon.clone(),
+            green_dragon.clone(),
+            white_dragon.clone(),
+            east_wind.clone(),
+            south_wind.clone(),
+            north_wind.clone(),
+            west_wind.clone(),
+            north_wind.clone(),
+            north_wind.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 0);
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            nine_sou.clone(),
+            one_man.clone(),
+            nine_man.clone(),
+            one_pin.clone(),
+            nine_pin.clone(),
+            red_dragon.clone(),
+            green_dragon.clone(),
+            white_dragon.clone(),
+            east_wind.clone(),
+            south_wind.clone(),
+            north_wind.clone(),
+            west_wind.clone(),
+            north_wind.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 1);
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_triple_seq() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap();
+        let two_sou: Tile = "2s".to_string().try_into().unwrap();
+        let three_sou: Tile = "3s".to_string().try_into().unwrap();
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap();
+        let north_wind: Tile = "Nw".to_string().try_into().unwrap();
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            north_wind.clone(),
+            north_wind.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 2);
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_extra_tiles() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap();
+        let two_sou: Tile = "2s".to_string().try_into().unwrap();
+        let three_sou: Tile = "3s".to_string().try_into().unwrap();
+        let four_sou: Tile = "4s".to_string().try_into().unwrap();
+        let five_sou: Tile = "5s".to_string().try_into().unwrap();
+        let six_sou: Tile = "6s".to_string().try_into().unwrap();
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap();
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            four_sou.clone(),
+            four_sou.clone(),
+            five_sou.clone(),
+            five_sou.clone(),
+            six_sou.clone(),
+            six_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 0);
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            four_sou.clone(),
+            five_sou.clone(),
+            six_sou.clone(),
+            six_sou.clone(),
+            six_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            four_sou.clone(),
+            four_sou.clone(),
+            four_sou.clone(),
+        ];
+
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 0);
     }
 }

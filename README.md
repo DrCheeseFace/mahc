@@ -3,6 +3,7 @@
 CLI tool that calculates the score of a hand in riichi mahjong. <br>
 - Manual mode (Calculator Mode): given han and fu, calculates the score <br>
 - Normal mode: given a hand, calculates the score with included yaku and fu <br>
+- Analyse mode: Given tiles, will find valid tile shapes <br>
 
 **This also doubles as a scoring library!** check out the <a href="https://docs.rs/mahc/latest/mahc/">docs on crates.io</a>
 
@@ -88,8 +89,22 @@ note: the winning group has to go last (this is to calculate fu correctly)
     NonSimpleClosedTriplet: 8
     NonSimpleClosedTriplet: 8
     SingleWait: 2
-
 ```
+
+### Analyse Mode
+This is a pretty new feature and needs some work
+``` bash
+~/$ mahc --tiles 1p 2p 3p 1p 2p 3p 1p 2p 3p rd rd rd rd Ew Ew -w Ew --analyse-tiles
+
+> Handshapes found
+  111p 222p 333p EEw rrrrd
+  123p 123p 123p EEw rrrrd
+
+~/$ mahc --tiles 1p 2p 3p 1p 2p 3p 1p 2p 3p rd rd rd rd Ew Ew -w Ew --analyse-tiles --json
+
+> {"hands":["111p 222p 333p EEw rrrrd ","123p 123p 123p EEw rrrrd "]}
+```
+
 ### Using file input
 ``` 
 # hands.txt

@@ -1,3 +1,5 @@
+use suit::Suit;
+
 pub mod calc;
 pub mod fu;
 pub mod hand;
