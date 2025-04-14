@@ -14,14 +14,17 @@ CLI tool that calculates the score of a hand in riichi mahjong. <br>
 ## Examples
 ### Library Usage
 ```rust
-use mahc::tile_group::TileGroup;
-use mahc::tile::Tile;
-use mahc::tile::Wind;
-use mahc::hand::Hand;
+use mahc::{
+    calc::{calculate, get_hand_score},
+    hand::Hand,
+    suit::Suit,
+    tile::{Tile, WValue, EAST_VALUE},
+    tile_group::TileGroup,
+};
 
 // creating a tilegroup from a string
 let one_two_three_seq: TileGroup = "123s".to_string().try_into().unwrap();
-let seven_eight_nine_seq: TileGroup = "789m".to_string().try_into().unwrap
+let seven_eight_nine_seq: TileGroup = "789m".to_string().try_into().unwrap();
 
 // creating a tilegroup from tiles
 let seven_tile: Tile = "7m".to_string().try_into().unwrap();
@@ -199,19 +202,24 @@ yields
 | Open Sets       | 234po (an open sequence of 2, 3, 4 in Pin suit) |
 | akadora         | 0m, 0p, 0s                                      | 
 
-- eg: EEEw (triplet of east wind)
-- eg: 234m (sequence of 2 3 4 Man)
-- eg: 406s (sequence of 4 5 6 Sou with the akadora 5 sou)
-- eg: rrrrdo (open quad of red dragon)
-- eg: 11s (pair of 1 sou)
-- eg: 8m (8 man tile)
+- eg: EEEw - triplet of east wind
+- eg: 234m - sequence of 2 3 4 Man
+- eg: 406s - sequence of 4 5 6 Sou with the akadora 5 sou
+- eg: 7777zo - open quad of red dragon
+- eg: 11s - pair of 1 sou
+- eg: 8m - 8 man tile
 
 ## Installation
 
 #### *using <a href="https://doc.rust-lang.org/cargo/getting-started/installation.html"> cargo</a>*
+If you want to use mahc as a scoring library 
+```
+cargo add mahc 
+```
+If you want to use mahc as a cli program use 
 ```
 cargo install mahc
-mahc --version
+mahc --help
 ```
 #### *build from source*
 ```
@@ -237,7 +245,8 @@ cd mahc/x86_64-unknown-linux-gnu/release
 - ---- @gondoly @GuoDCZ
 
 - If you spot a bug, put in an issue with how to reproduce it
-- if you'd like to contribute, DO IT (send a PR)
+- If you'd like to contribute, DO IT (send a PR)
+- If you think this library could do with some interface changes, make a suggestion 
 
 
 ![this.jpg](https://64.media.tumblr.com/07006d83e5810b3c651254e7b9a3e713/c4dc091a7806e504-ef/s400x600/cdfb08014450e71074a0a8763a67661485d59f8c.gif)
