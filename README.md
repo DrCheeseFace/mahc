@@ -76,7 +76,9 @@ assert_eq!(payment.dealer_ron(score.honba()), 7700);
 note: the winning group has to go last (this is to calculate fu correctly)
 ``` bash
 ~/$ mahc --tiles 777z 111z 234p 234p 11p -w 1p -p Ew -s Ew
-> 7 Han/ 50 Fu
+> rrrd EEEw 234p 234p 11p | 1p
+
+  7 Han/ 50 Fu
   Dealer: 18000 (6000)
   Non-dealer: 12000 (3000/6000)
   Yaku:
@@ -120,12 +122,16 @@ This is a pretty new feature and needs some work
 ```bash
 ~/$ mahc -f hands.txt
 
-❯ Dealer: 96000 (32000)
+❯ 1p 9p 1s 9s 1m 9m rd gd wd Ew Sw Nw WWw | Ww
+
+  Dealer: 96000 (32000)
   Non-dealer: 64000 (16000/32000)
   Yaku:
     KokushiMusou Yakuman
     KokushiMusou Yakuman 13 sided wait
-  
+
+❯ EEw NNw SSw WWw rrd wwd ggd | gd 
+
   Dealer: 144000 (48000)
   Non-dealer: 96000 (24000/48000)
   Yaku:
