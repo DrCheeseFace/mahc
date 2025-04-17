@@ -203,7 +203,7 @@ impl Hand {
             match group.group_type() {
                 GroupType::Pair => fu_types.push(Fu::SingleWait),
                 GroupType::Sequence => {
-                    let mid_tile = group.tiles()[0].clone().next().unwrap();
+                    let mid_tile = group.tiles()[0].clone().get_next();
                     if *self.win_tile() == mid_tile
                         || !self.win_tile().is_terminal() && group.is_terminal()
                     {
@@ -278,7 +278,7 @@ impl Hand {
             return count;
         }
         for tile in dora_indicator_tiles.clone().unwrap() {
-            let dora_tile = tile.clone().next().unwrap();
+            let dora_tile = tile.clone().get_next();
             for triplet in self.triplets() {
                 if *triplet.tiles()[0] == dora_tile {
                     count += 3;
