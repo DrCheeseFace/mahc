@@ -1,4 +1,4 @@
-use crate::{tile::Tile, tile_group::TileGroup, Suit};
+use crate::{suit::Suit, tile::Tile, tile_group::TileGroup};
 use std::collections::HashMap;
 
 pub fn get_melds_from_tile_counts(tile_counts: &HashMap<Tile, u8>) -> Vec<TileGroup> {
