@@ -14,7 +14,10 @@ impl std::fmt::Display for HandErr {
             Self::InvalidSuit => write!(f, "Invalid Suit found"),
             Self::InvalidShape => write!(f, "Invalid Hand Shape found"),
             Self::InvalidTile => write!(f, "Tile is not valid!"),
-            Self::ParseErr => write!(f, "Failed to parse value of tile to u8! This is probably due to calling this method on a non MPS suit"),
+            Self::ParseErr => write!(
+                f,
+                "Failed to parse value of tile to u8! This is probably due to calling this method on a non MPS suit"
+            ),
         }
     }
 }

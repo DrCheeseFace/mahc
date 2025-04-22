@@ -32,6 +32,7 @@ pub struct Score {
 
 impl Score {
     /// Create a new [`Score`].
+    #[allow(clippy::too_many_arguments)]
     pub fn new(
         payment: Payment,
         yaku: Vec<Yaku>,

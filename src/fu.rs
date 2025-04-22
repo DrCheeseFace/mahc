@@ -63,12 +63,12 @@ impl Fu {
 
 /// Sum up all of the fu, rounding to the nearest 10.
 pub fn calculate_total_fu_value(fu: &[Fu]) -> FuValue {
-    ((fu.iter().map(|f| f.value()).sum::<FuValue>() + 9) / 10) * 10
+    fu.iter().map(|f| f.value()).sum::<FuValue>().div_ceil(10) * 10
 }
 
 #[cfg(test)]
 mod tests {
-    use super::{calculate_total_fu_value, Fu};
+    use super::{Fu, calculate_total_fu_value};
     use crate::hand::Hand;
 
     #[test]
