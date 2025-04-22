@@ -1,6 +1,6 @@
 use crate::hand::error::HandErr;
 use crate::suit::{Suit, Z_SUIT_CHAR};
-use crate::{tile::*, VALID_SEQUENCE_VALUES};
+use crate::{VALID_SEQUENCE_VALUES, tile::*};
 
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub struct TileGroup {

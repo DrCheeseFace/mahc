@@ -68,7 +68,7 @@ pub fn calculate_total_fu_value(fu: &[Fu]) -> FuValue {
 
 #[cfg(test)]
 mod tests {
-    use super::{calculate_total_fu_value, Fu};
+    use super::{Fu, calculate_total_fu_value};
     use crate::hand::Hand;
 
     #[test]
