@@ -19,7 +19,7 @@ jobs:
       - name: Run fmt check
         run: cargo fmt --check
       - name: Run clippy check
-        run: cargo clippy -- -A clippy::too_many_arguments
+        run: cargo clippy -- -D warnings 
       - name: Build
         run: cargo build --verbose
       - name: Run tests

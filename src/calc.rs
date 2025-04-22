@@ -4,9 +4,9 @@ mod utils;
 use crate::calc::utils::{
     get_kans, get_melds_from_tile_counts, get_pairs, get_singles, get_triplets,
 };
-use crate::fu::{calculate_total_fu_value, Fu};
-use crate::hand::validate_hand_shape;
+use crate::fu::{Fu, calculate_total_fu_value};
 use crate::hand::Hand;
+use crate::hand::validate_hand_shape;
 use crate::limit_hand::LimitHands;
 use crate::payment::Payment;
 use crate::score::{FuValue, HanValue, HonbaCounter, Score};
@@ -17,6 +17,7 @@ use error::CalcErr;
 use std::collections::HashMap;
 
 /// Get the score breakdown of the hand.
+#[allow(clippy::too_many_arguments)]
 pub fn get_hand_score(
     hand: &Hand,
     dora: &Option<Vec<Tile>>,
@@ -101,6 +102,7 @@ pub fn get_hand_score(
 }
 
 // Get list of yaku and yakuman from hand
+#[allow(clippy::too_many_arguments)]
 pub fn get_yaku_and_yakuman(
     hand: &Hand,
     tsumo: bool,
@@ -162,6 +164,7 @@ pub fn get_yakuman(hand: &Hand, tsumo: bool, tenhou: bool) -> Vec<Yaku> {
 }
 
 // Get list of yaku from hand
+#[allow(clippy::too_many_arguments)]
 pub fn get_yaku(
     hand: &Hand,
     tsumo: bool,
@@ -268,6 +271,7 @@ pub fn calculate(han: &HanValue, fu: &FuValue) -> Result<Payment, CalcErr> {
 }
 
 /// Checks for invalid scoring conditions
+#[allow(clippy::too_many_arguments)]
 pub fn validate_scoring_conditions(
     hand: &Hand,
     tsumo: bool,

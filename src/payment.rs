@@ -124,7 +124,7 @@ impl Payment {
             fu
         } else {
             // Round up to the nearest 10.
-            (fu + 9) / 10 * 10
+            fu.div_ceil(10) * 10
         };
 
         Self::new(fu * 2u64.pow(han + 2))
@@ -137,7 +137,7 @@ impl Payment {
 
     /// Round the payment amount to the nearest hundredth.
     fn round_payment(&self, unrounded_payment: Points) -> Points {
-        (unrounded_payment + 99) / 100 * 100
+        unrounded_payment.div_ceil(100) * 100
     }
 
     /// Get the amount of points the player that dealt-in has to pay to a dealer.
