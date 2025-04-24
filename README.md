@@ -1,4 +1,4 @@
-
+![](https://github.com/DrCheeseFace/mahc/actions/workflows/rust.yml/badge.svg)
 # Riichi Mahjong Scoring Library and Calculator 
 CLI tool that calculates the score of a hand in riichi mahjong. <br>
 - Manual mode (Calculator Mode): given han and fu, calculates the score <br>
