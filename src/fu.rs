@@ -1,5 +1,6 @@
 use crate::score::FuValue;
 
+#[repr(C)]
 #[derive(Debug, PartialEq)]
 pub enum Fu {
     BasePoints,

@@ -1,6 +1,7 @@
 use crate::suit::*;
 use crate::{hand::error::HandErr, suit::Suit};
 
+#[repr(C)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum Tile {
     Man(MpsValue),
@@ -10,9 +11,10 @@ pub enum Tile {
     Dragon(DValue),
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum MpsValue {
-    One,
+    One = 0,
     Two,
     Three,
     Four,
@@ -24,6 +26,7 @@ pub enum MpsValue {
     Nine,
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum WValue {
     East,
@@ -32,6 +35,7 @@ pub enum WValue {
     North,
 }
 
+#[repr(C)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum DValue {
     Red,

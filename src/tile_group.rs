@@ -243,6 +243,7 @@ impl TileGroup {
 
 //AHAHAHAHAHAHAHAH I DONT NEED THIS
 //turns our i did need this :)
+#[repr(C)]
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
 pub enum GroupType {
     Sequence,

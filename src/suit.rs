@@ -1,5 +1,6 @@
 use crate::{hand::error::HandErr, tile::*};
 
+#[repr(C)]
 #[derive(Debug, Clone, PartialEq, Hash, Eq, PartialOrd, Ord)]
 pub enum Suit {
     Manzu,

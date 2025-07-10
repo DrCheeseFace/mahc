@@ -1,5 +1,6 @@
 use crate::score::HanValue;
 
+#[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum Yaku {
     // One Han Yaku
