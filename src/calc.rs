@@ -1,16 +1,12 @@
 pub mod error;
 mod utils;
 
-use crate::calc::utils::{
-    get_kans, get_melds_from_tile_counts, get_pairs, get_singles, get_triplets,
-};
 use crate::fu::{Fu, calculate_total_fu_value};
 use crate::hand::Hand;
-use crate::hand::validate_hand_shape;
 use crate::limit_hand::LimitHands;
 use crate::payment::Payment;
 use crate::score::{FuValue, HanValue, HonbaCounter, Score};
-use crate::tile::Tile;
+use crate::tile::{DValue, MpsValue, Tile, WValue};
 use crate::tile_group::TileGroup;
 use crate::yaku::Yaku;
 use error::CalcErr;
@@ -309,73 +305,184 @@ pub fn validate_scoring_conditions(
     None
 }
 
-pub fn get_valid_hand_shapes(tiles: &Vec<Tile>) -> Vec<Vec<TileGroup>> {
-    let mut hands: Vec<Vec<TileGroup>> = Vec::new();
-    let pairs = get_pairs(tiles);
-    let trips = get_triplets(tiles);
-    let kans = get_kans(tiles);
-    let singles = get_singles(tiles);
-
-    // all hands require atleast 1 pair
-    if pairs.is_empty() {
-        return hands;
+pub fn get_valid_hand_shapes(tiles: &[Tile]) -> Vec<Vec<TileGroup>> {
+    if tiles.len() > 18 || tiles.len() < 2 {
+        return vec![];
     }
 
-    //kokushi chitoi check
-    if trips.is_empty() && kans.is_empty() {
-        let kokushi_chitoi: Vec<TileGroup> = [singles, trips, kans, pairs.clone()].concat();
-        match validate_hand_shape(&kokushi_chitoi) {
-            Some(_) => {}
-            None => hands.push(kokushi_chitoi),
+    let mut tile_counts = get_tile_counts(tiles);
+    let mut all_shapes = Vec::new();
+
+    if tiles.len() == 14 {
+        if let Some(hand) = check_seven_pairs(&tile_counts) {
+            all_shapes.push(hand);
         }
     }
 
-    let mut tile_counts: HashMap<Tile, u8> = HashMap::new();
-    for tile in tiles {
-        tile_counts
-            .entry(*tile)
-            .and_modify(|x| *x += 1)
-            .or_insert(0);
+    if tiles.len() == 14 {
+        if let Some(hand) = check_thirteen_orphans(&tile_counts) {
+            all_shapes.push(hand);
+        }
     }
 
-    // TODO good lord all mighty this can be optimised ALOT
-    let mut hand_combos: Vec<Vec<TileGroup>> = Vec::new();
-    let all_melds = get_melds_from_tile_counts(&tile_counts);
-    for pair in pairs {
-        for meld_1 in &all_melds {
-            for meld_2 in &all_melds {
-                for meld_3 in &all_melds {
-                    for meld_4 in &all_melds {
-                        let mut combined_melds = vec![
-                            meld_1.clone(),
-                            meld_2.clone(),
-                            meld_3.clone(),
-                            meld_4.clone(),
-                            pair.clone(),
-                        ];
-                        combined_melds.sort();
-                        if !hand_combos.contains(&combined_melds) {
-                            hand_combos.push(combined_melds.clone());
+    find_standard_shapes(&mut tile_counts, &mut all_shapes);
 
-                            let mut hand_tile_counts: HashMap<Tile, u8> = HashMap::new();
-                            for tile in combined_melds.iter().flat_map(|m| m.tiles()) {
-                                hand_tile_counts
-                                    .entry(*tile)
-                                    .and_modify(|x| *x += 1)
-                                    .or_insert(0);
-                            }
+    for shape in &mut all_shapes {
+        shape.sort();
+    }
+    all_shapes.sort();
+    all_shapes.dedup();
 
-                            if hand_tile_counts == tile_counts {
-                                hands.push(combined_melds);
-                            }
-                        }
-                    }
+    all_shapes
+}
+
+fn get_tile_counts(tiles: &[Tile]) -> HashMap<Tile, u8> {
+    let mut counts = HashMap::new();
+    for tile in tiles {
+        *counts.entry(*tile).or_insert(0) += 1;
+    }
+    counts
+}
+
+fn check_seven_pairs(counts: &HashMap<Tile, u8>) -> Option<Vec<TileGroup>> {
+    if counts.len() == 7 && counts.values().all(|&c| c == 2) {
+        let hand = counts
+            .keys()
+            .map(|&tile| TileGroup::new(vec![tile, tile], false).unwrap())
+            .collect();
+        Some(hand)
+    } else {
+        None
+    }
+}
+
+fn check_thirteen_orphans(counts: &HashMap<Tile, u8>) -> Option<Vec<TileGroup>> {
+    let required_tiles = [
+        Tile::Pin(MpsValue::One),
+        Tile::Pin(MpsValue::Nine),
+        Tile::Sou(MpsValue::One),
+        Tile::Sou(MpsValue::Nine),
+        Tile::Man(MpsValue::One),
+        Tile::Man(MpsValue::Nine),
+        Tile::Dragon(DValue::Red),
+        Tile::Dragon(DValue::Green),
+        Tile::Dragon(DValue::White),
+        Tile::Wind(WValue::East),
+        Tile::Wind(WValue::South),
+        Tile::Wind(WValue::West),
+        Tile::Wind(WValue::North),
+    ];
+    let mut has_pair = false;
+    let mut is_kokushi = true;
+
+    for &tile in &required_tiles {
+        match counts.get(&tile) {
+            Some(1) => {}
+            Some(2) => {
+                if has_pair {
+                    is_kokushi = false;
+                    break;
                 }
+                has_pair = true;
+            }
+            _ => {
+                is_kokushi = false;
+                break;
             }
         }
     }
 
-    hands
+    if is_kokushi && has_pair {
+        let mut hand = Vec::new();
+        for &tile in &required_tiles {
+            if *counts.get(&tile).unwrap_or(&0) == 2 {
+                hand.push(TileGroup::new(vec![tile, tile], false).unwrap());
+            } else {
+                hand.push(TileGroup::new(vec![tile], false).unwrap());
+            }
+        }
+        return Some(hand);
+    }
+
+    None
+}
+
+fn find_standard_shapes(tile_counts: &mut HashMap<Tile, u8>, all_shapes: &mut Vec<Vec<TileGroup>>) {
+    let mut sorted_tiles: Vec<_> = tile_counts.keys().copied().collect();
+    sorted_tiles.sort();
+
+    for &tile in &sorted_tiles {
+        if *tile_counts.get(&tile).unwrap_or(&0) >= 2 {
+            let pair_group = TileGroup::new(vec![tile, tile], false).unwrap();
+
+            tile_counts.entry(tile).and_modify(|c| *c -= 2);
+
+            let mut current_hand = vec![pair_group];
+            find_melds_recursive(tile_counts, &mut current_hand, all_shapes);
+
+            tile_counts.entry(tile).and_modify(|c| *c += 2);
+        }
+    }
+}
+
+fn find_melds_recursive(
+    tile_counts: &mut HashMap<Tile, u8>,
+    current_hand: &mut Vec<TileGroup>,
+    all_shapes: &mut Vec<Vec<TileGroup>>,
+) {
+    if tile_counts.values().all(|&c| c == 0) {
+        all_shapes.push(current_hand.clone());
+        return;
+    }
+
+    let mut sorted_tiles: Vec<_> = tile_counts.keys().copied().collect();
+    sorted_tiles.sort();
+    let first_tile = match sorted_tiles
+        .iter()
+        .find(|t| *tile_counts.get(t).unwrap_or(&0) > 0)
+    {
+        Some(&t) => t,
+        None => return,
+    };
+
+    if *tile_counts.get(&first_tile).unwrap_or(&0) >= 4 {
+        let triplet = TileGroup::new(vec![first_tile; 4], false).unwrap();
+        current_hand.push(triplet);
+        tile_counts.entry(first_tile).and_modify(|c| *c -= 4);
+
+        find_melds_recursive(tile_counts, current_hand, all_shapes);
+
+        tile_counts.entry(first_tile).and_modify(|c| *c += 4);
+        current_hand.pop();
+    }
+    if *tile_counts.get(&first_tile).unwrap_or(&0) >= 3 {
+        let triplet = TileGroup::new(vec![first_tile; 3], false).unwrap();
+        current_hand.push(triplet);
+        tile_counts.entry(first_tile).and_modify(|c| *c -= 3);
+
+        find_melds_recursive(tile_counts, current_hand, all_shapes);
+
+        tile_counts.entry(first_tile).and_modify(|c| *c += 3);
+        current_hand.pop();
+    }
+
+    if !first_tile.is_honor() {
+        let (t2, t3) = (first_tile.get_next(), first_tile.get_next().get_next());
+        if *tile_counts.get(&t2).unwrap_or(&0) >= 1 && *tile_counts.get(&t3).unwrap_or(&0) >= 1 {
+            let sequence = TileGroup::new(vec![first_tile, t2, t3], false).unwrap();
+            current_hand.push(sequence);
+            tile_counts.entry(first_tile).and_modify(|c| *c -= 1);
+            tile_counts.entry(t2).and_modify(|c| *c -= 1);
+            tile_counts.entry(t3).and_modify(|c| *c -= 1);
+
+            find_melds_recursive(tile_counts, current_hand, all_shapes);
+
+            tile_counts.entry(first_tile).and_modify(|c| *c += 1);
+            tile_counts.entry(t2).and_modify(|c| *c += 1);
+            tile_counts.entry(t3).and_modify(|c| *c += 1);
+            current_hand.pop();
+        }
+    }
 }
 
 #[cfg(test)]
@@ -384,13 +491,13 @@ mod tests {
         calc::{
             error::CalcErr,
             get_hand_score, get_valid_hand_shapes,
-            utils::{get_pairs, get_sequences, get_singles, get_triplets},
+            utils::{get_kans, get_pairs, get_sequences, get_singles, get_triplets},
         },
         hand::Hand,
         tile::{MpsValue, Tile},
     };
 
-    use super::{get_kans, validate_scoring_conditions};
+    use super::validate_scoring_conditions;
 
     #[test]
     fn yakuman_scoring() {

@@ -1,6 +1,7 @@
 use crate::{suit::Suit, tile::Tile, tile_group::TileGroup};
 use std::collections::HashMap;
 
+#[allow(dead_code)]
 pub fn get_melds_from_tile_counts(tile_counts: &HashMap<Tile, u8>) -> Vec<TileGroup> {
     let mut tiles: Vec<Tile> = Vec::new();
     for (tile, count) in tile_counts {
@@ -74,6 +75,7 @@ pub fn get_sequences(tiles: &[Tile]) -> Vec<TileGroup> {
 }
 
 // assumes valid max number of tiles
+#[allow(dead_code)]
 pub fn get_singles(tiles: &[Tile]) -> Vec<TileGroup> {
     let mut singles: Vec<TileGroup> = Vec::new();
     for tile in tiles {
@@ -86,6 +88,7 @@ pub fn get_singles(tiles: &[Tile]) -> Vec<TileGroup> {
 }
 
 // assumes valid max number of tiles
+#[allow(dead_code)]
 pub fn get_pairs(tiles: &Vec<Tile>) -> Vec<TileGroup> {
     let mut pairs: Vec<TileGroup> = Vec::new();
     let mut counts = std::collections::HashMap::new();

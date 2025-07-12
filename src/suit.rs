@@ -12,11 +12,11 @@ pub enum Suit {
 impl std::fmt::Display for Suit {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Suit::Manzu => write!(f, "{}", MAN_SUIT_CHAR),
-            Suit::Pinzu => write!(f, "{}", PIN_SUIT_CHAR),
-            Suit::Souzu => write!(f, "{}", SOU_SUIT_CHAR),
-            Suit::Wind => write!(f, "{}", WIND_SUIT_CHAR),
-            Suit::Dragon => write!(f, "{}", DRAGON_SUIT_CHAR),
+            Suit::Manzu => write!(f, "{MAN_SUIT_CHAR}"),
+            Suit::Pinzu => write!(f, "{PIN_SUIT_CHAR}"),
+            Suit::Souzu => write!(f, "{SOU_SUIT_CHAR}"),
+            Suit::Wind => write!(f, "{WIND_SUIT_CHAR}"),
+            Suit::Dragon => write!(f, "{DRAGON_SUIT_CHAR}"),
         }
     }
 }

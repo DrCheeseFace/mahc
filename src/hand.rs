@@ -26,7 +26,7 @@ impl std::fmt::Display for Hand {
         }
         out.push_str("| ");
         out.push_str(&self.win_tile.to_string());
-        write!(f, "{}", out)
+        write!(f, "{out}")
     }
 }
 

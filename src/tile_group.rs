@@ -19,7 +19,7 @@ impl std::fmt::Display for TileGroup {
         if self.isopen {
             out.push('o');
         }
-        write!(f, "{}", out)
+        write!(f, "{out}")
     }
 }
 

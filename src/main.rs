@@ -346,7 +346,7 @@ fn default_hand_out(score: &Score, hand: &Hand, emoji_out: bool) -> String {
     if !score.yaku()[0].is_yakuman() {
         out.push_str("\nFu: ");
         for fu in score.fu() {
-            out.push_str(format!("\n  {}", fu).as_str());
+            out.push_str(format!("\n  {fu}").as_str());
         }
     }
 
@@ -390,13 +390,13 @@ fn parse_file(args: &Args) {
 fn printout(result: &Result<String, CalcErr>, json: bool) {
     match result {
         Ok(o) => {
-            println!("{}", o);
+            println!("{o}");
         }
         Err(e) => {
             if json {
                 eprintln!("{}", json_err_out(*e))
             } else {
-                eprintln!("Error: {}", e);
+                eprintln!("Error: {e}");
             }
         }
     }

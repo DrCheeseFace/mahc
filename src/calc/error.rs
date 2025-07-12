@@ -40,7 +40,7 @@ impl std::fmt::Display for CalcErr {
             Self::NoHan => write!(f, "No Han provided!"),
             Self::NoFu => write!(f, "No Fu provided!"),
             Self::NoHandshapesFound => write!(f, "No handshapes found"),
-            Self::HandErr(t) => write!(f, "{}", t),
+            Self::HandErr(t) => write!(f, "{t}"),
         }
     }
 }
