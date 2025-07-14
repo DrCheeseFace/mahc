@@ -245,7 +245,6 @@ cd mahc/x86_64-unknown-linux-gnu/release
 ## Contributing
 <a href="https://github.com/drcheeseface/mahc">
     <img src="https://contrib.rocks/image?repo=drcheeseface/mahc" />
-    <img src="https://avatars.githubusercontent.com/u/113280601?v=4&s=32" style="border-radius: 50%; height: 65px;" />
 </a>
 
 - ---- @gondoly @GuoDCZ
