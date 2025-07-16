@@ -306,12 +306,12 @@ pub fn validate_scoring_conditions(
 }
 
 pub fn get_valid_hand_shapes(tiles: &[Tile]) -> Vec<Vec<TileGroup>> {
-    if tiles.len() > 18 || tiles.len() < 2 {
+    if tiles.len() > 18 || tiles.len() < 14 {
         return vec![];
     }
 
     let mut tile_counts = get_tile_counts(tiles);
-    let mut all_shapes = Vec::new();
+    let mut all_shapes: Vec<Vec<TileGroup>> = Vec::new();
 
     if tiles.len() == 14 {
         if let Some(hand) = check_seven_pairs(&tile_counts) {
@@ -326,6 +326,8 @@ pub fn get_valid_hand_shapes(tiles: &[Tile]) -> Vec<Vec<TileGroup>> {
     }
 
     find_standard_shapes(&mut tile_counts, &mut all_shapes);
+
+    all_shapes.retain(|shape| shape.len() == 5 || shape.len() == 13 || shape.len() == 7);
 
     for shape in &mut all_shapes {
         shape.sort();
@@ -1092,5 +1094,52 @@ mod tests {
 
         let hand_shapes = get_valid_hand_shapes(&tiles);
         assert_eq!(hand_shapes.len(), 0);
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_not_enough_tiles() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap();
+        let two_sou: Tile = "2s".to_string().try_into().unwrap();
+        let three_sou: Tile = "3s".to_string().try_into().unwrap();
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 0);
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_not_enough_tile_groups_for_kans() {
+        let one_sou: Tile = "1s".to_string().try_into().unwrap();
+        let two_sou: Tile = "2s".to_string().try_into().unwrap();
+        let three_sou: Tile = "3s".to_string().try_into().unwrap();
+        let four_sou: Tile = "4s".to_string().try_into().unwrap();
+
+        let tiles: Vec<Tile> = vec![
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            one_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            three_sou.clone(),
+            four_sou.clone(),
+            four_sou.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 3);
     }
 }
