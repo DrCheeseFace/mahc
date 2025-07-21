@@ -22,8 +22,15 @@ pub const MAX_GROUPS_PER_HAND: usize = 14;
 
 #[repr(C)]
 pub struct HandShapes {
-    pub hands: [[CTileGroup; MAX_GROUPS_PER_HAND]; MAX_HAND_SHAPES],
+    pub hands: [HandShape; MAX_HAND_SHAPES],
     pub hands_len: usize,
+}
+
+#[repr(C)]
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Copy)]
+pub struct HandShape {
+    pub groups: [CTileGroup; MAX_GROUPS_PER_HAND],
+    pub group_count: usize,
 }
 
 #[repr(C)]
@@ -56,19 +63,25 @@ pub extern "C" fn C_get_valid_hand_shapes(tiles_string: *const c_char) -> *mut H
             return None;
         }
 
-        let mut c_hands = [[CTileGroup::default(); MAX_GROUPS_PER_HAND]; MAX_HAND_SHAPES];
+        let default_hand_shape = HandShape {
+            groups: [CTileGroup::default(); MAX_GROUPS_PER_HAND],
+            group_count: 0,
+        };
+
+        let mut hands = [default_hand_shape; MAX_HAND_SHAPES];
 
         for (hand_idx, hand) in handshapes.iter().enumerate() {
             if hand.len() > MAX_GROUPS_PER_HAND {
                 return None;
             }
+            hands[hand_idx].group_count = hand.len();
             for (group_idx, group) in hand.iter().enumerate() {
-                c_hands[hand_idx][group_idx] = CTileGroup::try_from(group.clone()).ok()?;
+                hands[hand_idx].groups[group_idx] = CTileGroup::try_from(group.clone()).ok()?;
             }
         }
 
         let result = HandShapes {
-            hands: c_hands,
+            hands,
             hands_len: handshapes.len(),
         };
         Some(Box::new(result))
@@ -84,7 +97,7 @@ impl CTileGroup {
     fn default() -> CTileGroup {
         let x: TileGroup =
             TileGroup::new(["1m".to_string().try_into().unwrap()].to_vec(), false).unwrap(); //holyguacamoly
-        return x.try_into().unwrap();
+        x.try_into().unwrap()
     }
 }
 
@@ -110,14 +123,15 @@ impl TryFrom<tile_group::TileGroup> for CTileGroup {
             isopen: value.isopen(),
             group_type: value.group_type(),
         };
-        return Ok(out);
+        Ok(out)
     }
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn C_free_hand_shapes(ptr: *mut HandShapes) {
-    if !ptr.is_null() {
-        unsafe {
+#[allow(clippy::missing_safety_doc)]
+pub unsafe extern "C" fn C_free_hand_shapes(ptr: *mut HandShapes) {
+    unsafe {
+        if !ptr.is_null() {
             let _ = Box::from_raw(ptr);
         }
     }
