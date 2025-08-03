@@ -4,6 +4,7 @@ use crate::{
     calc::{error::CalcErr, get_hand_score},
     fu::Fu,
     hand::{Hand, error::HandErr},
+    payment::Points,
     score::{FuValue, HanValue},
     tile_group::TileGroup,
     yaku::Yaku,
@@ -94,6 +95,11 @@ pub struct ScoreInfo {
     fu_len: usize,
     han_score: HanValue,
     fu_score: FuValue,
+    dealer_ron: Points,
+    dealer_tsumo: Points,
+    non_dealer_ron: Points,
+    non_dealer_tsumo_dealer: Points,
+    non_dealer_tsumo_non_dealer: Points,
 }
 
 #[repr(C)]
@@ -247,6 +253,7 @@ pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
 
     let result = match get_score_internal(conditions) {
         Ok(s) => ScoreResult {
+            error: FfiResult::Ok,
             score_info: ScoreInfo {
                 yaku: s.yaku().as_ptr(),
                 yaku_len: s.yaku().len(),
@@ -254,8 +261,12 @@ pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
                 fu_len: s.fu().len(),
                 han_score: s.han(),
                 fu_score: s.fu_score(),
+                dealer_ron: s.payment().dealer_ron(s.honba()),
+                dealer_tsumo: s.payment().dealer_tsumo(s.honba()),
+                non_dealer_ron: s.payment().non_dealer_ron(s.honba()),
+                non_dealer_tsumo_dealer: s.payment().non_dealer_tsumo_to_dealer(s.honba()),
+                non_dealer_tsumo_non_dealer: s.payment().non_dealer_tsumo_to_non_dealer(s.honba()),
             },
-            error: FfiResult::Ok,
         },
         Err(e) => ScoreResult {
             error: FfiResult::Err(e),
@@ -266,6 +277,11 @@ pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
                 fu_len: 0,
                 han_score: 0,
                 fu_score: 0,
+                dealer_ron: 0,
+                dealer_tsumo: 0,
+                non_dealer_ron: 0,
+                non_dealer_tsumo_dealer: 0,
+                non_dealer_tsumo_non_dealer: 0,
             },
         },
     };
