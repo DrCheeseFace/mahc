@@ -1,5 +1,6 @@
 use crate::hand::error::HandErr;
 
+#[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum CalcErr {
     HandErr(HandErr),

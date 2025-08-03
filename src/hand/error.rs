@@ -1,3 +1,4 @@
+#[repr(C)]
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum HandErr {
     InvalidGroup,

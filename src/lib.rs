@@ -1,6 +1,13 @@
 use std::ffi::{CStr, c_char};
 
-use crate::{hand::error::HandErr, tile_group::TileGroup};
+use crate::{
+    calc::{error::CalcErr, get_hand_score},
+    fu::Fu,
+    hand::{Hand, error::HandErr},
+    score::{FuValue, HanValue},
+    tile_group::TileGroup,
+    yaku::Yaku,
+};
 
 pub mod calc;
 pub mod fu;
@@ -19,6 +26,7 @@ const VALID_SEQUENCE_VALUES: &[&str] = &[
 
 pub const MAX_HAND_SHAPES: usize = 4;
 pub const MAX_GROUPS_PER_HAND: usize = 14;
+pub const MAX_DORA_TILE_COUNT: usize = 13;
 
 #[repr(C)]
 pub struct HandShapes {
@@ -40,6 +48,59 @@ pub struct CTileGroup {
     tiles_len: usize,
     isopen: bool,
     group_type: tile_group::GroupType,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct Conditions {
+    handshape: HandShape,
+    win_tile: tile::Tile,
+    seat_wind: tile::Tile,
+    prev_wind: tile::Tile,
+    dora_tiles: *const tile::Tile,
+    dora_tiles_len: usize,
+    winning_group_idx: usize,
+    tsumo: bool,
+    riichi: bool,
+    double_riichi: bool,
+    ippatsu: bool,
+    haitei: bool,
+    chankan: bool,
+    rinshan: bool,
+    tenhou: bool,
+    honba: u8,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub enum FfiResult {
+    Ok,
+    Err(CalcErr),
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct ScoreResult {
+    error: FfiResult,
+    score_info: ScoreInfo,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct ScoreInfo {
+    yaku: *const Yaku,
+    yaku_len: usize,
+    fu: *const Fu,
+    fu_len: usize,
+    han_score: HanValue,
+    fu_score: FuValue,
+}
+
+#[repr(C)]
+#[derive(Debug)]
+pub struct ScoreYaku {
+    yaku: *const Yaku,
+    yaku_count: usize,
 }
 
 #[unsafe(no_mangle)]
@@ -127,6 +188,12 @@ impl TryFrom<tile_group::TileGroup> for CTileGroup {
     }
 }
 
+impl From<CTileGroup> for tile_group::TileGroup {
+    fn from(val: CTileGroup) -> Self {
+        TileGroup::new(val.tiles.to_vec()[0..val.tiles_len].to_vec(), val.isopen).unwrap()
+    }
+}
+
 #[unsafe(no_mangle)]
 #[allow(clippy::missing_safety_doc)]
 pub unsafe extern "C" fn C_free_hand_shapes(ptr: *mut HandShapes) {
@@ -134,5 +201,85 @@ pub unsafe extern "C" fn C_free_hand_shapes(ptr: *mut HandShapes) {
         if !ptr.is_null() {
             let _ = Box::from_raw(ptr);
         }
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
+    fn get_score_internal(conditions: Conditions) -> Result<Box<score::Score>, CalcErr> {
+        let dora_slice =
+            unsafe { std::slice::from_raw_parts(conditions.dora_tiles, conditions.dora_tiles_len) };
+
+        let mut tile_groups: Vec<TileGroup> = vec![];
+        for (idx, group) in conditions.handshape.groups[0..conditions.handshape.group_count]
+            .iter()
+            .enumerate()
+        {
+            if idx != conditions.winning_group_idx {
+                tile_groups.push((*group).into());
+            }
+        }
+        tile_groups.push(conditions.handshape.groups[conditions.winning_group_idx].into());
+
+        let hand = Hand::new(
+            tile_groups,
+            conditions.win_tile,
+            conditions.seat_wind,
+            conditions.prev_wind,
+        )
+        .map_err(CalcErr::HandErr)?;
+
+        get_hand_score(
+            &hand,
+            &Some(dora_slice.to_vec()),
+            conditions.tsumo,
+            conditions.riichi,
+            conditions.double_riichi,
+            conditions.ippatsu,
+            conditions.haitei,
+            conditions.rinshan,
+            conditions.chankan,
+            conditions.tenhou,
+            conditions.honba.into(),
+        )
+        .map(Box::new)
+    }
+
+    let result = match get_score_internal(conditions) {
+        Ok(s) => ScoreResult {
+            score_info: ScoreInfo {
+                yaku: s.yaku().as_ptr(),
+                yaku_len: s.yaku().len(),
+                fu: s.fu().as_ptr(),
+                fu_len: s.fu().len(),
+                han_score: s.han(),
+                fu_score: s.fu_score(),
+            },
+            error: FfiResult::Ok,
+        },
+        Err(e) => ScoreResult {
+            error: FfiResult::Err(e),
+            score_info: ScoreInfo {
+                yaku: [].as_ptr(),
+                yaku_len: 0,
+                fu: [].as_ptr(),
+                fu_len: 0,
+                han_score: 0,
+                fu_score: 0,
+            },
+        },
+    };
+
+    Box::into_raw(Box::new(result))
+}
+
+#[unsafe(no_mangle)]
+#[allow(clippy::missing_safety_doc)]
+pub unsafe extern "C" fn C_free_score_result(result: *mut ScoreResult) {
+    unsafe {
+        if result.is_null() {
+            return;
+        }
+        let _ = Box::from_raw(result);
     }
 }
