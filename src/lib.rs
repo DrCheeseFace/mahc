@@ -1,4 +1,4 @@
-use std::ffi::{CStr, c_char};
+use std::ffi::{CStr, CString, c_char};
 
 use crate::{
     calc::{error::CalcErr, get_hand_score},
@@ -292,6 +292,25 @@ pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
 #[unsafe(no_mangle)]
 #[allow(clippy::missing_safety_doc)]
 pub unsafe extern "C" fn C_free_score_result(result: *mut ScoreResult) {
+    unsafe {
+        if result.is_null() {
+            return;
+        }
+        let _ = Box::from_raw(result);
+    }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn C_get_err_message_from_result(ffi_result: FfiResult) -> *mut c_char {
+    match ffi_result {
+        FfiResult::Ok => CString::new("OK").unwrap().into_raw(),
+        FfiResult::Err(calc_err) => CString::new(calc_err.to_string()).unwrap().into_raw(),
+    }
+}
+
+#[unsafe(no_mangle)]
+#[allow(clippy::missing_safety_doc)]
+pub unsafe extern "C" fn C_free_c_string(result: *mut c_char) {
     unsafe {
         if result.is_null() {
             return;
