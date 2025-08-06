@@ -28,6 +28,8 @@ const VALID_SEQUENCE_VALUES: &[&str] = &[
 pub const MAX_HAND_SHAPES: usize = 4;
 pub const MAX_GROUPS_PER_HAND: usize = 14;
 pub const MAX_DORA_TILE_COUNT: usize = 13;
+pub const MAX_YAKU_COUNT: usize = 20;
+pub const MAX_FU_COUNT: usize = 20;
 
 #[repr(C)]
 pub struct HandShapes {
@@ -89,9 +91,10 @@ pub struct ScoreResult {
 #[repr(C)]
 #[derive(Debug)]
 pub struct ScoreInfo {
-    yaku: *const Yaku,
+    is_open: bool,
+    yaku: [Yaku; MAX_YAKU_COUNT],
     yaku_len: usize,
-    fu: *const Fu,
+    fu: [Fu; MAX_FU_COUNT],
     fu_len: usize,
     han_score: HanValue,
     fu_score: FuValue,
@@ -251,29 +254,45 @@ pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
         .map(Box::new)
     }
 
+    let mut yakus_placeholder = [Yaku::Tanyao; MAX_YAKU_COUNT];
+    let mut fus_placeholder = [Fu::BasePoints; MAX_FU_COUNT];
+
     let result = match get_score_internal(conditions) {
-        Ok(s) => ScoreResult {
-            error: FfiResult::Ok,
-            score_info: ScoreInfo {
-                yaku: s.yaku().as_ptr(),
-                yaku_len: s.yaku().len(),
-                fu: s.fu().as_ptr(),
-                fu_len: s.fu().len(),
-                han_score: s.han(),
-                fu_score: s.fu_score(),
-                dealer_ron: s.payment().dealer_ron(s.honba()),
-                dealer_tsumo: s.payment().dealer_tsumo(s.honba()),
-                non_dealer_ron: s.payment().non_dealer_ron(s.honba()),
-                non_dealer_tsumo_dealer: s.payment().non_dealer_tsumo_to_dealer(s.honba()),
-                non_dealer_tsumo_non_dealer: s.payment().non_dealer_tsumo_to_non_dealer(s.honba()),
-            },
-        },
+        Ok(s) => {
+            for (yaku_idx, yaku) in s.yaku().iter().enumerate() {
+                yakus_placeholder[yaku_idx] = *yaku;
+            }
+            for (fu_idx, fu) in s.fu().iter().enumerate() {
+                fus_placeholder[fu_idx] = *fu;
+            }
+
+            ScoreResult {
+                error: FfiResult::Ok,
+                score_info: ScoreInfo {
+                    is_open: s.is_open(),
+                    yaku: yakus_placeholder,
+                    yaku_len: s.yaku().len(),
+                    fu: fus_placeholder,
+                    fu_len: s.fu().len(),
+                    han_score: s.han(),
+                    fu_score: s.fu_score(),
+                    dealer_ron: s.payment().dealer_ron(s.honba()),
+                    dealer_tsumo: s.payment().dealer_tsumo(s.honba()),
+                    non_dealer_ron: s.payment().non_dealer_ron(s.honba()),
+                    non_dealer_tsumo_dealer: s.payment().non_dealer_tsumo_to_dealer(s.honba()),
+                    non_dealer_tsumo_non_dealer: s
+                        .payment()
+                        .non_dealer_tsumo_to_non_dealer(s.honba()),
+                },
+            }
+        }
         Err(e) => ScoreResult {
             error: FfiResult::Err(e),
             score_info: ScoreInfo {
-                yaku: [].as_ptr(),
+                is_open: false,
+                yaku: yakus_placeholder,
                 yaku_len: 0,
-                fu: [].as_ptr(),
+                fu: fus_placeholder,
                 fu_len: 0,
                 han_score: 0,
                 fu_score: 0,
@@ -301,11 +320,21 @@ pub unsafe extern "C" fn C_free_score_result(result: *mut ScoreResult) {
 }
 
 #[unsafe(no_mangle)]
-pub extern "C" fn C_get_err_message_from_result(ffi_result: FfiResult) -> *mut c_char {
+pub extern "C" fn C_calc_err_string(ffi_result: FfiResult) -> *mut c_char {
     match ffi_result {
         FfiResult::Ok => CString::new("OK").unwrap().into_raw(),
         FfiResult::Err(calc_err) => CString::new(calc_err.to_string()).unwrap().into_raw(),
     }
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn C_yaku_string(yaku: Yaku, is_open: bool) -> *mut c_char {
+    CString::new(yaku.to_string(is_open)).unwrap().into_raw()
+}
+
+#[unsafe(no_mangle)]
+pub extern "C" fn C_fu_string(fu: Fu) -> *mut c_char {
+    CString::new(fu.to_string()).unwrap().into_raw()
 }
 
 #[unsafe(no_mangle)]
