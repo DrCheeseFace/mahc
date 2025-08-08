@@ -98,6 +98,7 @@ pub struct ScoreInfo {
     fu_len: usize,
     han_score: HanValue,
     fu_score: FuValue,
+    dora_count: u32,
     dealer_ron: Points,
     dealer_tsumo: Points,
     non_dealer_ron: Points,
@@ -276,6 +277,7 @@ pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
                     fu_len: s.fu().len(),
                     han_score: s.han(),
                     fu_score: s.fu_score(),
+                    dora_count: s.dora_count(),
                     dealer_ron: s.payment().dealer_ron(s.honba()),
                     dealer_tsumo: s.payment().dealer_tsumo(s.honba()),
                     non_dealer_ron: s.payment().non_dealer_ron(s.honba()),
@@ -296,6 +298,7 @@ pub extern "C" fn C_get_hand_score(conditions: Conditions) -> *mut ScoreResult {
                 fu_len: 0,
                 han_score: 0,
                 fu_score: 0,
+                dora_count: 0,
                 dealer_ron: 0,
                 dealer_tsumo: 0,
                 non_dealer_ron: 0,
@@ -346,4 +349,10 @@ pub unsafe extern "C" fn C_free_c_string(result: *mut c_char) {
         }
         let _ = Box::from_raw(result);
     }
+}
+
+#[unsafe(no_mangle)]
+#[allow(clippy::missing_safety_doc)]
+pub unsafe extern "C" fn C_yaku_is_yakuman(yaku: Yaku) -> bool {
+    yaku.is_yakuman()
 }
