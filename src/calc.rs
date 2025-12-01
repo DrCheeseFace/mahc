@@ -223,8 +223,7 @@ pub fn calculate_yaku_payment(
     for y in yaku {
         if y.is_yakuman() {
             yakuman_count += y.get_han(hand.is_open());
-        }
-        if !y.is_yakuman() {
+        } else {
             han += y.get_han(hand.is_open());
         }
     }
@@ -313,16 +312,16 @@ pub fn get_valid_hand_shapes(tiles: &[Tile]) -> Vec<Vec<TileGroup>> {
     let mut tile_counts = get_tile_counts(tiles);
     let mut all_shapes: Vec<Vec<TileGroup>> = Vec::new();
 
-    if tiles.len() == 14 {
-        if let Some(hand) = check_seven_pairs(&tile_counts) {
-            all_shapes.push(hand);
-        }
+    if tiles.len() == 14
+        && let Some(hand) = check_seven_pairs(&tile_counts)
+    {
+        all_shapes.push(hand);
     }
 
-    if tiles.len() == 14 {
-        if let Some(hand) = check_thirteen_orphans(&tile_counts) {
-            all_shapes.push(hand);
-        }
+    if tiles.len() == 14
+        && let Some(hand) = check_thirteen_orphans(&tile_counts)
+    {
+        all_shapes.push(hand);
     }
 
     find_standard_shapes(&mut tile_counts, &mut all_shapes);

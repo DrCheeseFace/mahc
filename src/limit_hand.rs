@@ -37,13 +37,13 @@ impl LimitHands {
         if han <= 5 {
             Some(Self::Mangan)
         } else if han <= 7 {
-            return Some(Self::Haneman);
+            Some(Self::Haneman)
         } else if han <= 10 {
-            return Some(Self::Baiman);
+            Some(Self::Baiman)
         } else if han <= 12 {
-            return Some(Self::Sanbaiman);
+            Some(Self::Sanbaiman)
         } else {
-            return Some(Self::KazoeYakuman);
+            Some(Self::KazoeYakuman)
         }
     }
 

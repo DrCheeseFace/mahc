@@ -331,9 +331,9 @@ impl GroupType {
                     .collect::<std::collections::HashSet<&str>>()
                     .contains(group.get(0..count).unwrap())
                 {
-                    return Ok(Self::Sequence);
+                    Ok(Self::Sequence)
                 } else {
-                    return Err(HandErr::InvalidGroup);
+                    Err(HandErr::InvalidGroup)
                 }
             }
             4 => {

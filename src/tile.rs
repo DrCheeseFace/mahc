@@ -200,102 +200,102 @@ impl Tile {
                 if value == ONE_VALUE {
                     Ok(Tile::Man(MpsValue::One))
                 } else if value == TWO_VALUE {
-                    return Ok(Tile::Man(MpsValue::Two));
+                    Ok(Tile::Man(MpsValue::Two))
                 } else if value == THREE_VALUE {
-                    return Ok(Tile::Man(MpsValue::Three));
+                    Ok(Tile::Man(MpsValue::Three))
                 } else if value == FOUR_VALUE {
-                    return Ok(Tile::Man(MpsValue::Four));
+                    Ok(Tile::Man(MpsValue::Four))
                 } else if value == FIVE_VALUE {
                     if isaka {
                         return Ok(Tile::Man(MpsValue::AkaFive));
                     }
-                    return Ok(Tile::Man(MpsValue::Five));
+                    Ok(Tile::Man(MpsValue::Five))
                 } else if value == SIX_VALUE {
-                    return Ok(Tile::Man(MpsValue::Six));
+                    Ok(Tile::Man(MpsValue::Six))
                 } else if value == SEVEN_VALUE {
-                    return Ok(Tile::Man(MpsValue::Seven));
+                    Ok(Tile::Man(MpsValue::Seven))
                 } else if value == EIGHT_VALUE {
-                    return Ok(Tile::Man(MpsValue::Eight));
+                    Ok(Tile::Man(MpsValue::Eight))
                 } else if value == NINE_VALUE {
-                    return Ok(Tile::Man(MpsValue::Nine));
+                    Ok(Tile::Man(MpsValue::Nine))
                 } else {
-                    return Err(HandErr::InvalidTile);
+                    Err(HandErr::InvalidTile)
                 }
             }
             Suit::Pinzu => {
                 if value == ONE_VALUE {
                     Ok(Tile::Pin(MpsValue::One))
                 } else if value == TWO_VALUE {
-                    return Ok(Tile::Pin(MpsValue::Two));
+                    Ok(Tile::Pin(MpsValue::Two))
                 } else if value == THREE_VALUE {
-                    return Ok(Tile::Pin(MpsValue::Three));
+                    Ok(Tile::Pin(MpsValue::Three))
                 } else if value == FOUR_VALUE {
-                    return Ok(Tile::Pin(MpsValue::Four));
+                    Ok(Tile::Pin(MpsValue::Four))
                 } else if value == FIVE_VALUE {
                     if isaka {
                         return Ok(Tile::Pin(MpsValue::AkaFive));
                     }
-                    return Ok(Tile::Pin(MpsValue::Five));
+                    Ok(Tile::Pin(MpsValue::Five))
                 } else if value == SIX_VALUE {
-                    return Ok(Tile::Pin(MpsValue::Six));
+                    Ok(Tile::Pin(MpsValue::Six))
                 } else if value == SEVEN_VALUE {
-                    return Ok(Tile::Pin(MpsValue::Seven));
+                    Ok(Tile::Pin(MpsValue::Seven))
                 } else if value == EIGHT_VALUE {
-                    return Ok(Tile::Pin(MpsValue::Eight));
+                    Ok(Tile::Pin(MpsValue::Eight))
                 } else if value == NINE_VALUE {
-                    return Ok(Tile::Pin(MpsValue::Nine));
+                    Ok(Tile::Pin(MpsValue::Nine))
                 } else {
-                    return Err(HandErr::InvalidTile);
+                    Err(HandErr::InvalidTile)
                 }
             }
             Suit::Souzu => {
                 if value == ONE_VALUE {
                     Ok(Tile::Sou(MpsValue::One))
                 } else if value == TWO_VALUE {
-                    return Ok(Tile::Sou(MpsValue::Two));
+                    Ok(Tile::Sou(MpsValue::Two))
                 } else if value == THREE_VALUE {
-                    return Ok(Tile::Sou(MpsValue::Three));
+                    Ok(Tile::Sou(MpsValue::Three))
                 } else if value == FOUR_VALUE {
-                    return Ok(Tile::Sou(MpsValue::Four));
+                    Ok(Tile::Sou(MpsValue::Four))
                 } else if value == FIVE_VALUE {
                     if isaka {
                         return Ok(Tile::Sou(MpsValue::AkaFive));
                     }
-                    return Ok(Tile::Sou(MpsValue::Five));
+                    Ok(Tile::Sou(MpsValue::Five))
                 } else if value == SIX_VALUE {
-                    return Ok(Tile::Sou(MpsValue::Six));
+                    Ok(Tile::Sou(MpsValue::Six))
                 } else if value == SEVEN_VALUE {
-                    return Ok(Tile::Sou(MpsValue::Seven));
+                    Ok(Tile::Sou(MpsValue::Seven))
                 } else if value == EIGHT_VALUE {
-                    return Ok(Tile::Sou(MpsValue::Eight));
+                    Ok(Tile::Sou(MpsValue::Eight))
                 } else if value == NINE_VALUE {
-                    return Ok(Tile::Sou(MpsValue::Nine));
+                    Ok(Tile::Sou(MpsValue::Nine))
                 } else {
-                    return Err(HandErr::InvalidTile);
+                    Err(HandErr::InvalidTile)
                 }
             }
             Suit::Wind => {
                 if value == WEST_VALUE || value == WEST_VALUE_Z {
                     Ok(Tile::Wind(WValue::West))
                 } else if value == EAST_VALUE || value == EAST_VALUE_Z {
-                    return Ok(Tile::Wind(WValue::East));
+                    Ok(Tile::Wind(WValue::East))
                 } else if value == SOUTH_VALUE || value == SOUTH_VALUE_Z {
-                    return Ok(Tile::Wind(WValue::South));
+                    Ok(Tile::Wind(WValue::South))
                 } else if value == NORTH_VALUE || value == NORTH_VALUE_Z {
-                    return Ok(Tile::Wind(WValue::North));
+                    Ok(Tile::Wind(WValue::North))
                 } else {
-                    return Err(HandErr::InvalidTile);
+                    Err(HandErr::InvalidTile)
                 }
             }
             Suit::Dragon => {
                 if value == RED_VALUE || value == RED_VALUE_Z {
                     Ok(Tile::Dragon(DValue::Red))
                 } else if value == GREEN_VALUE || value == GREEN_VALUE_Z {
-                    return Ok(Tile::Dragon(DValue::Green));
+                    Ok(Tile::Dragon(DValue::Green))
                 } else if value == WHITE_VALUE || value == WHITE_VALUE_Z {
-                    return Ok(Tile::Dragon(DValue::White));
+                    Ok(Tile::Dragon(DValue::White))
                 } else {
-                    return Err(HandErr::InvalidTile);
+                    Err(HandErr::InvalidTile)
                 }
             }
         }
