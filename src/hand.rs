@@ -798,54 +798,62 @@ impl Hand {
 
     /// Check if the hand consists of 1112345678999 in the same suit, plus one additional tile of that suit.
     pub fn is_chuurenpoutou(&self) -> bool {
+        // Skip kokushi-style hands
         if self.groups.len() == 13 {
             return false;
         }
 
-        let suit: Suit = self.groups[0].suit().clone();
-        if self.triplets().len() != 2 || self.sequences().len() != 2 || self.pairs().len() != 1 {
+        // Must be closed hand
+        if self.is_open() {
             return false;
         }
 
-        for group in self.groups.clone() {
+        // All groups must be same numbered suit
+        let suit = self.groups[0].suit();
+        if suit == Suit::Wind || suit == Suit::Dragon {
+            return false;
+        }
+
+        for group in &self.groups {
             if group.suit() != suit {
                 return false;
             }
         }
 
-        let has_1 = self
-            .triplets()
-            .clone()
-            .iter()
-            .any(|i| i.value() == ONE_VALUE);
-        let has_9 = self
-            .triplets()
-            .clone()
-            .iter()
-            .any(|i| i.value() == NINE_VALUE);
-        if !has_1 || !has_9 {
-            return false;
+        // Count tiles by value
+        let mut counts = [0u8; 10]; // index 1-9
+
+        for group in &self.groups {
+            let v = group.value().to_string().parse::<usize>().unwrap();
+            match group.group_type() {
+                GroupType::Triplet => counts[v] += 3,
+                GroupType::Sequence => {
+                    counts[v] += 1;
+                    counts[v + 1] += 1;
+                    counts[v + 2] += 1;
+                }
+                GroupType::Pair => counts[v] += 2,
+                GroupType::Kan => counts[v] += 4,
+                GroupType::None => return false,
+            }
         }
 
-        let mut vals: Vec<u8> = vec![];
-        for sequence_group in self.sequences() {
-            let int = sequence_group.value().to_string().parse::<u8>().unwrap();
-            vals.push(int);
-            vals.push(int + 1);
-            vals.push(int + 2);
+        // Chuuren base: 1112345678999 = [_, 3, 1, 1, 1, 1, 1, 1, 1, 3]
+        // Valid Chuuren has exactly one extra tile (value 1-9)
+        let base: [u8; 10] = [0, 3, 1, 1, 1, 1, 1, 1, 1, 3];
+        let mut extras = 0;
+
+        for i in 1..=9 {
+            if counts[i] == base[i] {
+                continue;
+            } else if counts[i] == base[i] + 1 {
+                extras += 1;
+            } else {
+                return false;
+            }
         }
 
-        for pair_group in self.pairs() {
-            let int = pair_group.value().to_string().parse::<u8>().unwrap();
-            vals.push(int);
-        }
-
-        vals.sort();
-        if vals != [2, 3, 4, 5, 6, 7, 8] {
-            return false;
-        }
-
-        true
+        extras == 1
     }
 
     /// Check if the hand consists of 1112345678999 in the same suit, plus one additional tile of that suit.
@@ -1426,6 +1434,41 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou9sided());
+    }
+
+    #[test]
+    fn yaku_chuurenpoutou_extra_1_or_9() {
+        // Extra 1: 123p 456p 789p 999p 11p - should be yakuman
+        let out = Hand::new_from_strings(
+            vec![
+                "123p".to_string(),
+                "456p".to_string(),
+                "789p".to_string(),
+                "999p".to_string(),
+                "11p".to_string(),
+            ],
+            "1p".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        assert!(out.is_chuurenpoutou());
+
+        // Extra 9: 111p 123p 456p 789p 99p - should be yakuman
+        let out = Hand::new_from_strings(
+            vec![
+                "111p".to_string(),
+                "123p".to_string(),
+                "456p".to_string(),
+                "789p".to_string(),
+                "99p".to_string(),
+            ],
+            "9p".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        assert!(out.is_chuurenpoutou());
     }
 
     #[test]
