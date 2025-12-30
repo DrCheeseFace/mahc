@@ -860,19 +860,39 @@ impl Hand {
     ///
     /// This variant checks that the hand was completed with a 9-sided wait.
     pub fn is_chuurenpoutou9sided(&self) -> bool {
-        if self.groups.len() == 13 {
-            return false;
-        }
-
         if !self.is_chuurenpoutou() {
             return false;
         }
 
-        if self.groups.last().unwrap().group_type() != GroupType::Pair {
-            return false;
+        // Count tiles and find which position has the extra
+        let mut counts = [0u8; 10];
+        for group in &self.groups {
+            let v = group.value().to_string().parse::<usize>().unwrap();
+            match group.group_type() {
+                GroupType::Triplet => counts[v] += 3,
+                GroupType::Sequence => {
+                    counts[v] += 1;
+                    counts[v + 1] += 1;
+                    counts[v + 2] += 1;
+                }
+                GroupType::Pair => counts[v] += 2,
+                GroupType::Kan => counts[v] += 4,
+                GroupType::None => return false,
+            }
         }
 
-        true
+        let base: [u8; 10] = [0, 3, 1, 1, 1, 1, 1, 1, 1, 3];
+
+        // Find which value has the extra tile
+        for i in 1..=9 {
+            if counts[i] == base[i] + 1 {
+                // For 9-sided wait, winning tile must be the extra
+                let win_val = self.win_tile.value().to_digit(10).unwrap() as usize;
+                return win_val == i;
+            }
+        }
+
+        false
     }
 
     /// Check if the hand only consists of honor tiles.
@@ -1364,6 +1384,7 @@ mod tests {
 
     #[test]
     fn yaku_chuurenpoutou() {
+        // Valid chuuren
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1378,6 +1399,8 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou());
+
+        // Invalid: mixed suits
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1392,6 +1415,8 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou());
+
+        // Invalid: wrong tile pattern
         let out = Hand::new_from_strings(
             vec![
                 "123s".to_string(),
@@ -1406,6 +1431,8 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou());
+
+        // 9-sided wait: extra=5, win=5 (true 9-sided)
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1420,6 +1447,8 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou9sided());
+
+        // NOT 9-sided: extra=5, win=9
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1434,7 +1463,8 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou9sided());
-        // Extra 1: 123p 456p 789p 999p 11p
+
+        // NOT 9-sided: extra=9, win=1
         let out = Hand::new_from_strings(
             vec![
                 "123p".to_string(),
@@ -1449,7 +1479,9 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou());
-        // Extra 9: 111p 123p 456p 789p 99p
+        assert!(!out.is_chuurenpoutou9sided());
+
+        // NOT 9-sided: extra=1, win=9
         let out = Hand::new_from_strings(
             vec![
                 "111p".to_string(),
@@ -1464,6 +1496,7 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou());
+        assert!(!out.is_chuurenpoutou9sided());
     }
 
     #[test]
