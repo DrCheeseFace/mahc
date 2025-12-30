@@ -1384,6 +1384,7 @@ mod tests {
 
     #[test]
     fn yaku_chuurenpoutou() {
+        // Valid chuuren
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1398,6 +1399,8 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou());
+
+        // Invalid: mixed suits
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1412,6 +1415,8 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou());
+
+        // Invalid: wrong tile pattern
         let out = Hand::new_from_strings(
             vec![
                 "123s".to_string(),
@@ -1426,6 +1431,8 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou());
+
+        // 9-sided wait: extra=5, win=5 (true 9-sided)
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1440,6 +1447,8 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou9sided());
+
+        // NOT 9-sided: extra=5, win=9
         let out = Hand::new_from_strings(
             vec![
                 "111s".to_string(),
@@ -1454,7 +1463,8 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou9sided());
-        // Extra 1: 123p 456p 789p 999p 11p
+
+        // NOT 9-sided: extra=9, win=1
         let out = Hand::new_from_strings(
             vec![
                 "123p".to_string(),
@@ -1469,7 +1479,9 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou());
-        // Extra 9: 111p 123p 456p 789p 99p
+        assert!(!out.is_chuurenpoutou9sided());
+
+        // NOT 9-sided: extra=1, win=9
         let out = Hand::new_from_strings(
             vec![
                 "111p".to_string(),
@@ -1484,6 +1496,7 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou());
+        assert!(!out.is_chuurenpoutou9sided());
     }
 
     #[test]
