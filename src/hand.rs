@@ -1434,11 +1434,7 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_chuurenpoutou9sided());
-    }
-
-    #[test]
-    fn yaku_chuurenpoutou_extra_1_or_9() {
-        // Extra 1: 123p 456p 789p 999p 11p - should be yakuman
+        // Extra 1: 123p 456p 789p 999p 11p
         let out = Hand::new_from_strings(
             vec![
                 "123p".to_string(),
@@ -1453,8 +1449,7 @@ mod tests {
         )
         .unwrap();
         assert!(out.is_chuurenpoutou());
-
-        // Extra 9: 111p 123p 456p 789p 99p - should be yakuman
+        // Extra 9: 111p 123p 456p 789p 99p
         let out = Hand::new_from_strings(
             vec![
                 "111p".to_string(),
