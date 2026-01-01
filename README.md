@@ -253,7 +253,4 @@ cd mahc/x86_64-unknown-linux-gnu/release
 - If you'd like to contribute, DO IT (send a PR)
 - If you think this library could do with some interface changes, make a suggestion 
 
-## License 
-<a href="./LICENSE">MIT</a> all the way baby
-
 ![this.jpg](https://64.media.tumblr.com/07006d83e5810b3c651254e7b9a3e713/c4dc091a7806e504-ef/s400x600/cdfb08014450e71074a0a8763a67661485d59f8c.gif)
