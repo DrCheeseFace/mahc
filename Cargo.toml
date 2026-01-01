@@ -1,11 +1,11 @@
 [package]
 name = "mahc"
-version = "1.17.1"
+version = "2.0.0"
 edition = "2024"
 authors =[  "Tharun <tharun1@hotmail.co.uk>" ]
 description = "riichi mahjong calculator library and CLI"
 repository = "https://github.com/DrCheeseFace/mahc"
-license = "MIT"
+license = "BSD-3-Clause"
 readme = "README.md"
 
 [dependencies]
