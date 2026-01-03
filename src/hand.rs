@@ -995,7 +995,7 @@ impl Hand {
     ///
     /// Calling a kan counts as interrupting the turn order.
     pub fn is_chiihou(&self, tenhou: bool) -> bool {
-        if tenhou && *self.seat_tile() == Tile::Wind(WValue::East) {
+        if tenhou && *self.seat_tile() != Tile::Wind(WValue::East) {
             return true;
         }
         false
@@ -1171,6 +1171,41 @@ mod tests {
         )
         .unwrap();
         assert!(!out.is_kokushi());
+    }
+
+    #[test]
+    fn yaku_tenhou_chiihou() {
+        let out = Hand::new_from_strings(
+            vec![
+                "EEEEw".to_string(),
+                "SSSw".to_string(),
+                "WWWw".to_string(),
+                "NNNw".to_string(),
+                "99s".to_string(),
+            ],
+            "9s".to_string(),
+            "Ew".to_string(),
+            "Ew".to_string(),
+        )
+        .unwrap();
+        assert!(out.is_tenhou(true));
+        assert!(!out.is_chiihou(true));
+
+        let out = Hand::new_from_strings(
+            vec![
+                "EEEEw".to_string(),
+                "SSSw".to_string(),
+                "WWWw".to_string(),
+                "NNNw".to_string(),
+                "99s".to_string(),
+            ],
+            "9s".to_string(),
+            "Ew".to_string(),
+            "Ww".to_string(),
+        )
+        .unwrap();
+        assert!(!out.is_tenhou(true));
+        assert!(out.is_chiihou(true));
     }
 
     #[test]
