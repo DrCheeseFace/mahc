@@ -321,6 +321,16 @@ impl Tile {
         false
     }
 
+    // for handling aka
+    pub fn normalized(self) -> Tile {
+        match self {
+            Tile::Man(MpsValue::AkaFive) => Tile::Man(MpsValue::Five),
+            Tile::Pin(MpsValue::AkaFive) => Tile::Pin(MpsValue::Five),
+            Tile::Sou(MpsValue::AkaFive) => Tile::Sou(MpsValue::Five),
+            _ => self,
+        }
+    }
+
     pub fn is_terminal(&self) -> bool {
         if *self == Tile::Man(MpsValue::One)
             || *self == Tile::Man(MpsValue::Nine)

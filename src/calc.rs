@@ -335,12 +335,15 @@ pub fn get_valid_hand_shapes(tiles: &[Tile]) -> Vec<Vec<TileGroup>> {
     all_shapes.dedup();
 
     all_shapes
+        .into_iter()
+        .map(|shape| materialize_shape(&shape, tiles))
+        .collect()
 }
 
 fn get_tile_counts(tiles: &[Tile]) -> HashMap<Tile, u8> {
     let mut counts = HashMap::new();
     for tile in tiles {
-        *counts.entry(*tile).or_insert(0) += 1;
+        *counts.entry(tile.normalized()).or_insert(0) += 1;
     }
     counts
 }
@@ -484,6 +487,47 @@ fn find_melds_recursive(
             current_hand.pop();
         }
     }
+}
+
+// this is for handling aka mostly
+fn materialize_shape(shape: &[TileGroup], original_tiles: &[Tile]) -> Vec<TileGroup> {
+    let mut available: HashMap<Tile, u8> = HashMap::new();
+    for t in original_tiles {
+        *available.entry(*t).or_insert(0) += 1;
+    }
+
+    shape
+        .iter()
+        .map(|group| {
+            let mut tiles = Vec::new();
+
+            for t in group.tiles() {
+                // aka first
+                let candidates = match t {
+                    Tile::Man(MpsValue::Five) => {
+                        [Tile::Man(MpsValue::AkaFive), Tile::Man(MpsValue::Five)]
+                    }
+                    Tile::Pin(MpsValue::Five) => {
+                        [Tile::Pin(MpsValue::AkaFive), Tile::Pin(MpsValue::Five)]
+                    }
+                    Tile::Sou(MpsValue::Five) => {
+                        [Tile::Sou(MpsValue::AkaFive), Tile::Sou(MpsValue::Five)]
+                    }
+                    _ => [*t, *t],
+                };
+
+                let chosen = candidates
+                    .into_iter()
+                    .find(|c| available.get(c).copied().unwrap_or(0) > 0)
+                    .unwrap();
+
+                *available.get_mut(&chosen).unwrap() -= 1;
+                tiles.push(chosen);
+            }
+
+            TileGroup::new(tiles, group.isopen()).unwrap()
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -1093,6 +1137,163 @@ mod tests {
 
         let hand_shapes = get_valid_hand_shapes(&tiles);
         assert_eq!(hand_shapes.len(), 0);
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_with_aka() {
+        let five_sou: Tile = "5s".to_string().try_into().unwrap();
+        let aka_five_sou: Tile = "0s".to_string().try_into().unwrap();
+        let nine_pin: Tile = "9p".to_string().try_into().unwrap();
+        let three_pin: Tile = "3p".to_string().try_into().unwrap();
+        let four_sou: Tile = "4s".to_string().try_into().unwrap();
+        let three_sou: Tile = "3s".to_string().try_into().unwrap();
+        let two_sou: Tile = "2s".to_string().try_into().unwrap();
+        let red_dragon: Tile = "rd".to_string().try_into().unwrap();
+        let north_wind: Tile = "Nw".to_string().try_into().unwrap();
+
+        let tiles: Vec<Tile> = vec![
+            five_sou.clone(),
+            four_sou.clone(),
+            three_sou.clone(),
+            aka_five_sou.clone(),
+            four_sou.clone(),
+            three_sou.clone(),
+            five_sou.clone(),
+            four_sou.clone(),
+            three_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            north_wind.clone(),
+            north_wind.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 2);
+        assert!(hand_shapes.iter().all(|h| {
+            h.iter()
+                .flat_map(|g| g.tiles())
+                .filter(|t| t.is_aka())
+                .count()
+                == 1
+        }));
+
+        let tiles: Vec<Tile> = vec![
+            nine_pin.clone(),
+            nine_pin.clone(),
+            three_pin.clone(),
+            three_pin.clone(),
+            five_sou.clone(),
+            aka_five_sou.clone(),
+            four_sou.clone(),
+            four_sou.clone(),
+            two_sou.clone(),
+            two_sou.clone(),
+            red_dragon.clone(),
+            red_dragon.clone(),
+            north_wind.clone(),
+            north_wind.clone(),
+        ];
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+        assert_eq!(hand_shapes.len(), 1);
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_no_aka_in_input_means_no_aka_in_output() {
+        let tiles: Vec<Tile> = vec![
+            "2s", "3s", "4s", "3p", "4p", "5p", "6m", "7m", "8m", "rd", "rd", "rd", "Nw", "Nw",
+        ]
+        .into_iter()
+        .map(|s| s.to_string().try_into().unwrap())
+        .collect();
+
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+
+        assert!(!hand_shapes.is_empty());
+        assert!(
+            hand_shapes
+                .iter()
+                .all(|h| h.iter().flat_map(|g| g.tiles()).all(|t| !t.is_aka()))
+        );
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_aka_count_is_never_exceeded() {
+        let tiles: Vec<Tile> = vec![
+            "0s", "0s", "3s", "4s", "5s", "3p", "4p", "5p", "6m", "7m", "8m", "rd", "rd", "Nw",
+        ]
+        .into_iter()
+        .map(|s| s.to_string().try_into().unwrap())
+        .collect();
+
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+
+        assert!(hand_shapes.iter().all(|h| {
+            h.iter()
+                .flat_map(|g| g.tiles())
+                .filter(|t| t.is_aka())
+                .count()
+                <= 2
+        }));
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_aka_does_not_create_extra_shapes() {
+        let base_tiles: Vec<Tile> = vec![
+            "5s", "5s", "3s", "4s", "3p", "4p", "5p", "6m", "7m", "8m", "rd", "rd", "rd", "Nw",
+        ]
+        .into_iter()
+        .map(|s| s.to_string().try_into().unwrap())
+        .collect();
+
+        let aka_tiles: Vec<Tile> = vec![
+            "0s", "5s", "3s", "4s", "3p", "4p", "5p", "6m", "7m", "8m", "rd", "rd", "rd", "Nw",
+        ]
+        .into_iter()
+        .map(|s| s.to_string().try_into().unwrap())
+        .collect();
+
+        let base_shapes = get_valid_hand_shapes(&base_tiles);
+        let aka_shapes = get_valid_hand_shapes(&aka_tiles);
+
+        assert_eq!(base_shapes.len(), aka_shapes.len());
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_aka_can_be_used_in_sequences() {
+        let tiles: Vec<Tile> = vec![
+            "3s", "4s", "0s", "3p", "4p", "5p", "6m", "7m", "8m", "rd", "rd", "rd", "Nw", "Nw",
+        ]
+        .into_iter()
+        .map(|s| s.to_string().try_into().unwrap())
+        .collect();
+
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+
+        assert!(!hand_shapes.is_empty());
+        assert!(
+            hand_shapes
+                .iter()
+                .any(|h| h.iter().flat_map(|g| g.tiles()).any(|t| t.is_aka()))
+        );
+    }
+
+    #[test]
+    fn get_valid_hand_shapes_aka_is_never_honor() {
+        let tiles: Vec<Tile> = vec![
+            "0s", "5s", "3s", "4s", "3p", "4p", "5p", "6m", "7m", "8m", "rd", "rd", "rd", "Nw",
+        ]
+        .into_iter()
+        .map(|s| s.to_string().try_into().unwrap())
+        .collect();
+
+        let hand_shapes = get_valid_hand_shapes(&tiles);
+
+        assert!(hand_shapes.iter().all(|h| {
+            h.iter()
+                .flat_map(|g| g.tiles())
+                .filter(|t| t.is_aka())
+                .all(|t| !t.is_honor())
+        }));
     }
 
     #[test]
